@@ -3,6 +3,19 @@ defmodule Chess.Piece do
 
   alias Chess.Piece
 
+  def symbol(p = %Piece{role: :knight}), do: colorize_symbol("n", p)
+
+  def symbol(p = %Piece{role: role}) do
+    role
+    |> Atom.to_string()
+    |> String.first()
+    |> colorize_symbol(p)
+  end
+
+  def symbol(_piece) do
+    "."
+  end
+
   def white_pawn do
     %Piece{role: :pawn, color: :white}
   end
@@ -50,4 +63,10 @@ defmodule Chess.Piece do
   def black_king do
     %Piece{role: :king, color: :black}
   end
+
+  defp colorize_symbol(symbol, %Piece{color: :white}) do
+    String.upcase(symbol)
+  end
+
+  defp colorize_symbol(symbol, _), do: symbol
 end

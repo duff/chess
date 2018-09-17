@@ -1,18 +1,18 @@
 defmodule Chess.Board do
+  defstruct ~w[
+    a8 b8 c8 d8 e8 f8 g8 h8
+    a7 b7 c7 d7 e7 f7 g7 h7
+    a6 b6 c6 d6 e6 f6 g6 h6
+    a5 b5 c5 d5 e5 f5 g5 h5
+    a4 b4 c4 d4 e4 f4 g4 h4
+    a3 b3 c3 d3 e3 f3 g3 h3
+    a2 b2 c2 d2 e2 f2 g2 h2
+    a1 b1 c1 d1 e1 f1 g1 h1
+  ]a
+
   alias Chess.Piece
   alias Chess.Board
   alias Chess.Position
-
-  defstruct ~w[
-    a1 b1 c1 d1 e1 f1 g1 h1
-    a2 b2 c2 d2 e2 f2 g2 h2
-    a3 b3 c3 d3 e3 f3 g3 h3
-    a4 b4 c4 d4 e4 f4 g4 h4
-    a5 b5 c5 d5 e5 f5 g5 h5
-    a6 b6 c6 d6 e6 f6 g6 h6
-    a7 b7 c7 d7 e7 f7 g7 h7
-    a8 b8 c8 d8 e8 f8 g8 h8
-  ]a
 
   def starting_position do
     white_pawns =
@@ -45,27 +45,31 @@ defmodule Chess.Board do
     |> struct(black_pawns)
   end
 
-  def piece_at(board, x, y) do
-    Map.fetch!(board, Position.name(x, y))
+  def piece_at(board, file, rank) do
+    Map.fetch!(board, Position.name(file, rank))
   end
 
   def piece_at(board, position_name) do
     Map.fetch!(board, position_name)
   end
 
-  def ascii(_board) do
-    # """
-    #     +------------------------+
-    #   8 | r  n  b  q  k  b  n  r |
-    #   7 | p  p  p  p  .  p  p  p |
-    #   6 | .  .  .  .  .  .  .  . |
-    #   5 | .  .  .  .  p  .  .  . |
-    #   4 | .  .  .  .  P  P  .  . |
-    #   3 | .  .  .  .  .  .  .  . |
-    #   2 | P  P  P  P  .  .  P  P |
-    #   1 | R  N  B  Q  K  B  N  R |
-    #     +------------------------+
-    #       a  b  c  d  e  f  g  h'
-    # """
+  def ascii(board) do
+    piece_symbols =
+      for rank <- 8..1,
+          file <- files() do
+        " #{Board.piece_at(board, file, rank) |> Piece.symbol()} "
+      end
+      |> Enum.chunk_every(8)
+      |> Enum.map(&Enum.join(&1, ""))
+      |> Enum.join(" |\n| ")
+
+    top = "\n\n+--------------------------+\n| "
+    bottom = " |\n+--------------------------+\n\n"
+
+    "#{top}#{piece_symbols}#{bottom}"
+  end
+
+  defp files do
+    ~w[a b c d e f g h]a
   end
 end
