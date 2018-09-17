@@ -52,24 +52,4 @@ defmodule Chess.Board do
   def piece_at(board, position_name) do
     Map.fetch!(board, position_name)
   end
-
-  def ascii(board) do
-    piece_symbols =
-      for rank <- 8..1,
-          file <- files() do
-        " #{Board.piece_at(board, file, rank) |> Piece.symbol()} "
-      end
-      |> Enum.chunk_every(8)
-      |> Enum.map(&Enum.join(&1, ""))
-      |> Enum.join(" |\n| ")
-
-    top = "\n\n+--------------------------+\n| "
-    bottom = " |\n+--------------------------+\n\n"
-
-    "#{top}#{piece_symbols}#{bottom}"
-  end
-
-  defp files do
-    ~w[a b c d e f g h]a
-  end
 end
