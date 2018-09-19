@@ -15,14 +15,6 @@ defmodule Chess.Board do
   alias Chess.Position
 
   def starting_position do
-    white_pawns =
-      ~w[a2 b2 c2 d2 e2 f2 g2 h2]a
-      |> Map.new(fn key -> {key, Piece.white_pawn()} end)
-
-    black_pawns =
-      ~w[a7 b7 c7 d7 e7 f7 g7 h7]a
-      |> Map.new(fn key -> {key, Piece.black_pawn()} end)
-
     %Board{
       a1: Piece.white_rook(),
       b1: Piece.white_knight(),
@@ -41,8 +33,8 @@ defmodule Chess.Board do
       g8: Piece.black_knight(),
       h8: Piece.black_rook()
     }
-    |> struct(white_pawns)
-    |> struct(black_pawns)
+    |> struct(initial_white_pawns())
+    |> struct(initial_black_pawns())
   end
 
   def piece_at(board, file, rank) do
@@ -51,5 +43,25 @@ defmodule Chess.Board do
 
   def piece_at(board, position_name) do
     Map.fetch!(board, position_name)
+  end
+
+  def move(board, from, to) do
+    {:ok, %{board | to => Board.piece_at(board, from), from => nil}}
+  end
+
+  defp initial_white_pawns do
+    ~w[a2 b2 c2 d2 e2 f2 g2 h2]a
+    |> Map.new(fn key -> {key, Piece.white_pawn()} end)
+  end
+
+  defp initial_black_pawns do
+    ~w[a7 b7 c7 d7 e7 f7 g7 h7]a
+    |> Map.new(fn key -> {key, Piece.black_pawn()} end)
+  end
+end
+
+defimpl Inspect, for: Chess.Board do
+  def inspect(board, _opts) do
+    Chess.Format.Ascii.to_s(board)
   end
 end

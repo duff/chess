@@ -14,4 +14,11 @@ defmodule Chess.BoardTest do
 
     assert board.a3 == nil
   end
+
+  test "move successful" do
+    {:ok, board} = Board.starting_position() |> IO.inspect() |> Board.move(:e2, :e4) |> IO.inspect()
+
+    assert Board.piece_at(board, :e4) == Piece.white_pawn()
+    assert Board.piece_at(board, :e2) == nil
+  end
 end
