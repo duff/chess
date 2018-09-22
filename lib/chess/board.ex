@@ -13,6 +13,7 @@ defmodule Chess.Board do
   alias Chess.Piece
   alias Chess.Board
   alias Chess.Position
+  alias Chess.Move
 
   def starting_position do
     %Board{
@@ -50,8 +51,27 @@ defmodule Chess.Board do
   end
 
   def move(board, from, to) do
-    {:ok, %{board | to => Board.piece_at(board, from), from => nil}}
+    from_piece = Board.piece_at(board, from)
+    to_piece = Board.piece_at(board, to)
+
+    case legal?(from_piece, to_piece) do
+      :ok -> do_move(board, from, to, from_piece, to_piece)
+      {:error, message} -> {:error, message}
+    end
   end
+
+  defp do_move(board, from, to, from_piece, to_piece) do
+    after_board = %{board | to => from_piece, from => nil}
+
+    move = %Move{from: from, to: to, before_board: board, after_board: after_board, piece: from_piece, captured: to_piece}
+    {:ok, move}
+  end
+
+  defp legal?(%Piece{color: same_color}, %Piece{color: same_color}) do
+    {:error, "Unable to move to a position occupied by your own color."}
+  end
+
+  defp legal?(_, _), do: :ok
 
   defp initial_white_pawns do
     ~w[a2 b2 c2 d2 e2 f2 g2 h2]a
