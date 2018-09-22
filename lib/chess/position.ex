@@ -1,5 +1,5 @@
 defmodule Chess.Position do
-  defstruct [:x, :y]
+  defstruct [:file, :rank]
 
   alias Chess.Position
 

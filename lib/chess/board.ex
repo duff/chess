@@ -45,6 +45,10 @@ defmodule Chess.Board do
     Map.fetch!(board, position_name)
   end
 
+  def move(_board, same_from_to, same_from_to) do
+    {:error, "Unable to move to the same place."}
+  end
+
   def move(board, from, to) do
     {:ok, %{board | to => Board.piece_at(board, from), from => nil}}
   end

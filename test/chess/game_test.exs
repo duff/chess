@@ -16,8 +16,8 @@ defmodule Chess.GameTest do
     assert Board.piece_at(game.board, :e2) == nil
   end
 
-  test "move failed" do
-    # {:error, message} = %Game{} |> Game.move(:e2, :e2)
-    # assert message == "Not a legal move"
+  test "from and to cannot be the same" do
+    {:error, message} = %Game{} |> Game.move(:e2, :e2)
+    assert message == "Unable to move to the same place."
   end
 end
