@@ -78,21 +78,12 @@ defmodule Chess.Board do
   end
 
   defp do_positions(_board, %Piece{role: :bishop}, %Position{file: file, rank: rank}) do
-    one_way =
-      @files
-      |> Enum.map(fn each_file ->
-        difference = @file_index[each_file] - @file_index[file]
-        Position.name(each_file, rank + difference)
-      end)
-
-    other_way =
-      @files
-      |> Enum.map(fn each_file ->
-        difference = @file_index[each_file] - @file_index[file]
-        Position.name(each_file, rank - difference)
-      end)
-
-    (one_way ++ other_way)
+    @files
+    |> Enum.map(fn each_file ->
+      difference = @file_index[each_file] - @file_index[file]
+      [Position.name(each_file, rank + difference), Position.name(each_file, rank - difference)]
+    end)
+    |> List.flatten()
     |> Enum.reject(&(&1 == Position.name(file, rank) || !Position.valid?(&1)))
   end
 
