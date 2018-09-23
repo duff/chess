@@ -3,6 +3,7 @@ defmodule Chess.BoardTest do
 
   alias Chess.Board
   alias Chess.Piece
+  # alias Chess.Move
 
   test "starting_position" do
     board = Board.starting_position()
@@ -38,5 +39,21 @@ defmodule Chess.BoardTest do
   test "moving to a square occupied by the same color - fail" do
     {:error, message} = Board.starting_position() |> Board.move(:e2, :d2)
     assert message == "Unable to move to a position occupied by your own color."
+  end
+
+  test "basic rook positions" do
+    board = %Board{d4: Piece.white_rook()}
+    assert Board.positions(board, :d4) == ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4]a
+
+    board = %Board{a1: Piece.white_rook()}
+    assert Board.positions(board, :a1) == ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1]a
+  end
+
+  test "basic bishop positions" do
+    board = %Board{d4: Piece.white_bishop()}
+    assert Board.positions(board, :d4) == ~w[a1 b2 c3 e5 f6 g7 h8 a7 b6 c5 e3 f2 g1]a
+
+    board = %Board{a1: Piece.white_bishop()}
+    assert Board.positions(board, :a1) == ~w[b2 c3 d4 e5 f6 g7 h8]a
   end
 end

@@ -13,8 +13,8 @@ defmodule Chess.GameTest do
   test "move successful" do
     {:ok, game} = %Game{} |> Game.move(:e2, :e4)
 
-    assert Board.piece_at(game.board, :e4) == Piece.white_pawn()
-    assert Board.piece_at(game.board, :e2) == nil
+    assert Board.piece(game.board, :e4) == Piece.white_pawn()
+    assert Board.piece(game.board, :e2) == nil
     assert [%Move{from: :e2, to: :e4}] = game.moves
   end
 

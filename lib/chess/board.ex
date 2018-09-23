@@ -15,6 +15,10 @@ defmodule Chess.Board do
   alias Chess.Position
   alias Chess.Move
 
+  @files ~w(a b c d e f g h)a
+  @ranks 1..8
+  @file_index Enum.with_index(@files, 1) |> Map.new()
+
   def starting_position do
     %Board{
       a1: Piece.white_rook(),
@@ -38,11 +42,11 @@ defmodule Chess.Board do
     |> struct(initial_black_pawns())
   end
 
-  def piece_at(board, file, rank) do
+  def piece(board, file, rank) do
     Map.fetch!(board, Position.name(file, rank))
   end
 
-  def piece_at(board, position_name) do
+  def piece(board, position_name) do
     Map.fetch!(board, position_name)
   end
 
@@ -51,13 +55,45 @@ defmodule Chess.Board do
   end
 
   def move(board, from, to) do
-    from_piece = Board.piece_at(board, from)
-    to_piece = Board.piece_at(board, to)
+    from_piece = Board.piece(board, from)
+    to_piece = Board.piece(board, to)
 
     case legal?(from_piece, to_piece) do
       :ok -> do_move(board, from, to, from_piece, to_piece)
       {:error, message} -> {:error, message}
     end
+  end
+
+  def positions(board, from) do
+    from_piece = Board.piece(board, from)
+    do_positions(board, from_piece, Position.for(from))
+  end
+
+  defp do_positions(_board, %Piece{role: :rook}, %Position{file: file, rank: rank}) do
+    horizontal = @ranks |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
+    vertical = @files |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
+
+    (horizontal ++ vertical)
+    |> Enum.reject(&(&1 == Position.name(file, rank)))
+  end
+
+  defp do_positions(_board, %Piece{role: :bishop}, %Position{file: file, rank: rank}) do
+    one_way =
+      @files
+      |> Enum.map(fn each_file ->
+        difference = @file_index[each_file] - @file_index[file]
+        Position.name(each_file, rank + difference)
+      end)
+
+    other_way =
+      @files
+      |> Enum.map(fn each_file ->
+        difference = @file_index[each_file] - @file_index[file]
+        Position.name(each_file, rank - difference)
+      end)
+
+    (one_way ++ other_way)
+    |> Enum.reject(&(&1 == Position.name(file, rank) || !Position.valid?(&1)))
   end
 
   defp do_move(board, from, to, from_piece, to_piece) do

@@ -13,7 +13,7 @@ defmodule Chess.Format.Ascii do
   defp piece_symbols(board) do
     for rank <- 8..1,
         file <- files() do
-      " #{Board.piece_at(board, file, rank) |> Piece.symbol()} "
+      " #{Board.piece(board, file, rank) |> Piece.symbol()} "
     end
   end
 
