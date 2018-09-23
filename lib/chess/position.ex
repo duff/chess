@@ -3,6 +3,10 @@ defmodule Chess.Position do
 
   alias Chess.Position
 
+  def name(%Position{rank: rank, file: file}) do
+    name(file, rank)
+  end
+
   def name(file, rank) do
     "#{file}#{rank}"
     |> String.to_atom()

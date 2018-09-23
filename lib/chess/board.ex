@@ -69,19 +69,16 @@ defmodule Chess.Board do
     do_positions(board, from_piece, Position.for(from))
   end
 
-  defp do_positions(_board, %Piece{role: :rook}, %Position{file: file, rank: rank}) do
-    horizontal = @ranks |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
-    vertical = @files |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
-
-    (horizontal ++ vertical)
-    |> Enum.reject(&(&1 == Position.name(file, rank)))
+  defp do_positions(_board, %Piece{role: :rook}, position) do
+    (column(position) ++ row(position))
+    |> Enum.reject(&(&1 == Position.name(position)))
   end
 
   defp do_positions(_board, %Piece{role: :bishop}, %Position{file: file, rank: rank}) do
     @files
     |> Enum.map(fn each_file ->
-      difference = @file_index[each_file] - @file_index[file]
-      [Position.name(each_file, rank + difference), Position.name(each_file, rank - difference)]
+      distance = @file_index[each_file] - @file_index[file]
+      [Position.name(each_file, rank + distance), Position.name(each_file, rank - distance)]
     end)
     |> List.flatten()
     |> Enum.reject(&(&1 == Position.name(file, rank) || !Position.valid?(&1)))
@@ -108,6 +105,14 @@ defmodule Chess.Board do
   defp initial_black_pawns do
     ~w[a7 b7 c7 d7 e7 f7 g7 h7]a
     |> Map.new(fn key -> {key, Piece.black_pawn()} end)
+  end
+
+  defp column(%Position{file: file}) do
+    @ranks |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
+  end
+
+  defp row(%Position{rank: rank}) do
+    @files |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
   end
 end
 
