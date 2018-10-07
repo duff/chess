@@ -70,7 +70,7 @@ defmodule Chess.Board do
   end
 
   defp do_positions(_board, %Piece{role: :rook}, position) do
-    column_position_names(position) ++ row_position_names(position)
+    rook_positions_names(position)
   end
 
   defp do_positions(_board, %Piece{role: :bishop}, position) do
@@ -81,6 +81,14 @@ defmodule Chess.Board do
     adjacent_column_position_names(position)
     |> Kernel.++(adjacent_row_position_names(position))
     |> Kernel.++(adjacent_diagonal_position_names(position))
+  end
+
+  defp do_positions(_board, %Piece{role: :queen}, position) do
+    rook_positions_names(position) ++ diagonal_position_names(position)
+  end
+
+  defp rook_positions_names(position) do
+    column_position_names(position) ++ row_position_names(position)
   end
 
   defp file_distance(position_name, %Position{file: file}) do
