@@ -56,4 +56,12 @@ defmodule Chess.BoardTest do
     board = %Board{a1: Piece.white_bishop()}
     assert Board.positions(board, :a1) == ~w[b2 c3 d4 e5 f6 g7 h8]a
   end
+
+  test "basic king positions" do
+    board = %Board{d4: Piece.white_king()}
+    assert Board.positions(board, :d4) == ~w[d3 d5 c4 e4 c3 c5 e5 e3]a
+
+    board = %Board{a1: Piece.white_king()}
+    assert Board.positions(board, :a1) == ~w[a2 b1 b2]a
+  end
 end

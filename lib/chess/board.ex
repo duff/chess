@@ -70,18 +70,50 @@ defmodule Chess.Board do
   end
 
   defp do_positions(_board, %Piece{role: :rook}, position) do
-    (column(position) ++ row(position))
+    column_position_names(position) ++ row_position_names(position)
+  end
+
+  defp do_positions(_board, %Piece{role: :bishop}, position) do
+    diagonal_position_names(position)
+  end
+
+  defp do_positions(_board, %Piece{role: :king}, position) do
+    adjacent_column_position_names(position)
+    |> Kernel.++(adjacent_row_position_names(position))
+    |> Kernel.++(adjacent_diagonal_position_names(position))
+  end
+
+  defp file_distance(position_name, %Position{file: file}) do
+    (@file_index[Position.for(position_name).file] - @file_index[file])
+    |> abs
+  end
+
+  defp rank_distance(position_name, %Position{rank: rank}) do
+    (Position.for(position_name).rank - rank)
+    |> abs
+  end
+
+  defp diagonal_position_names(position) do
+    @files
+    |> Enum.map(&diagonal_position_names_for_file(&1, position))
+    |> List.flatten()
+    |> delete_all(position)
+    |> delete_invalid
+  end
+
+  defp diagonal_position_names_for_file(destination_file, %Position{file: source_file, rank: source_rank}) do
+    distance = @file_index[destination_file] - @file_index[source_file]
+    [Position.name(destination_file, source_rank + distance), Position.name(destination_file, source_rank - distance)]
+  end
+
+  defp delete_all(list, position) do
+    list
     |> Enum.reject(&(&1 == Position.name(position)))
   end
 
-  defp do_positions(_board, %Piece{role: :bishop}, %Position{file: file, rank: rank}) do
-    @files
-    |> Enum.map(fn each_file ->
-      distance = @file_index[each_file] - @file_index[file]
-      [Position.name(each_file, rank + distance), Position.name(each_file, rank - distance)]
-    end)
-    |> List.flatten()
-    |> Enum.reject(&(&1 == Position.name(file, rank) || !Position.valid?(&1)))
+  defp delete_invalid(list) do
+    list
+    |> Enum.reject(&(!Position.valid?(&1)))
   end
 
   defp do_move(board, from, to, from_piece, to_piece) do
@@ -107,12 +139,31 @@ defmodule Chess.Board do
     |> Map.new(fn key -> {key, Piece.black_pawn()} end)
   end
 
-  defp column(%Position{file: file}) do
-    @ranks |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
+  defp column_position_names(position = %Position{file: file}) do
+    @ranks
+    |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
+    |> delete_all(position)
   end
 
-  defp row(%Position{rank: rank}) do
-    @files |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
+  defp row_position_names(position = %Position{rank: rank}) do
+    @files
+    |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
+    |> delete_all(position)
+  end
+
+  defp adjacent_column_position_names(position) do
+    column_position_names(position)
+    |> Enum.filter(&(rank_distance(&1, position) == 1))
+  end
+
+  defp adjacent_row_position_names(position) do
+    row_position_names(position)
+    |> Enum.filter(&(file_distance(&1, position) == 1))
+  end
+
+  defp adjacent_diagonal_position_names(position) do
+    diagonal_position_names(position)
+    |> Enum.filter(&(file_distance(&1, position) == 1))
   end
 end
 

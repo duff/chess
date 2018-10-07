@@ -7,7 +7,6 @@ defmodule Chess.Format.AsciiTest do
   test "to_s" do
     expected = """
 
-
       +--------------------------+
     8 |  r  n  b  q  k  b  n  r  |
     7 |  p  p  p  p  p  p  p  p  |
@@ -19,7 +18,6 @@ defmodule Chess.Format.AsciiTest do
     1 |  R  N  B  Q  K  B  N  R  |
       +--------------------------+
          a  b  c  d  e  f  g  h
-
     """
 
     board = Board.starting_position()

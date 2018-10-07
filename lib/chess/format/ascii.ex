@@ -32,10 +32,10 @@ defmodule Chess.Format.Ascii do
   end
 
   defp top do
-    "\n\n  #{border()}\n"
+    "\n  #{border()}\n"
   end
 
   defp bottom do
-    "  #{border()}\n     a  b  c  d  e  f  g  h\n\n"
+    "  #{border()}\n     a  b  c  d  e  f  g  h\n"
   end
 end
