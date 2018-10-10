@@ -3,7 +3,6 @@ defmodule Chess.BoardTest do
 
   alias Chess.Board
   alias Chess.Piece
-  # alias Chess.Move
 
   test "starting_position" do
     board = Board.starting_position()
@@ -59,10 +58,10 @@ defmodule Chess.BoardTest do
 
   test "basic king positions" do
     board = %Board{d4: Piece.white_king()}
-    assert Board.positions(board, :d4) == ~w[d3 d5 c4 e4 c3 c5 e5 e3]a
+    assert Board.positions(board, :d4) == ~w[e4 c4 d5 d3 e5 e3 c3 c5]a
 
     board = %Board{a1: Piece.white_king()}
-    assert Board.positions(board, :a1) == ~w[a2 b1 b2]a
+    assert Board.positions(board, :a1) == ~w[b1 a2 b2]a
   end
 
   test "basic queen positions" do
@@ -71,5 +70,13 @@ defmodule Chess.BoardTest do
 
     board = %Board{a1: Piece.white_queen()}
     assert Board.positions(board, :a1) == ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1 b2 c3 d4 e5 f6 g7 h8]a
+  end
+
+  test "basic knight positions" do
+    board = %Board{d4: Piece.white_knight()}
+    assert Board.positions(board, :d4) == ~w[b5 b3 f5 f3 c6 c2 e6 e2]a
+
+    board = %Board{a1: Piece.white_knight()}
+    assert Board.positions(board, :a1) == ~w[c2 b3]a
   end
 end

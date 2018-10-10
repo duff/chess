@@ -18,6 +18,7 @@ defmodule Chess.Board do
   @files ~w(a b c d e f g h)a
   @ranks 1..8
   @file_index Enum.with_index(@files, 1) |> Map.new()
+  @reverse_file_index Enum.zip(1..8, @files) |> Map.new()
 
   def starting_position do
     %Board{
@@ -74,42 +75,38 @@ defmodule Chess.Board do
   end
 
   defp do_positions(_board, %Piece{role: :bishop}, position) do
-    diagonal_position_names(position)
-  end
-
-  defp do_positions(_board, %Piece{role: :king}, position) do
-    adjacent_column_position_names(position)
-    |> Kernel.++(adjacent_row_position_names(position))
-    |> Kernel.++(adjacent_diagonal_position_names(position))
+    bishop_position_names(position)
   end
 
   defp do_positions(_board, %Piece{role: :queen}, position) do
-    rook_positions_names(position) ++ diagonal_position_names(position)
+    rook_positions_names(position) ++ bishop_position_names(position)
+  end
+
+  defp do_positions(_board, %Piece{role: :king}, position) do
+    [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
+    |> relative_position_names(position)
+    |> delete_invalid()
+  end
+
+  defp do_positions(_board, %Piece{role: :knight}, position) do
+    [[-2, 1], [-2, -1], [2, 1], [2, -1], [-1, 2], [-1, -2], [1, 2], [1, -2]]
+    |> relative_position_names(position)
+    |> delete_invalid()
   end
 
   defp rook_positions_names(position) do
     column_position_names(position) ++ row_position_names(position)
   end
 
-  defp file_distance(position_name, %Position{file: file}) do
-    (@file_index[Position.for(position_name).file] - @file_index[file])
-    |> abs
-  end
-
-  defp rank_distance(position_name, %Position{rank: rank}) do
-    (Position.for(position_name).rank - rank)
-    |> abs
-  end
-
-  defp diagonal_position_names(position) do
+  defp bishop_position_names(position) do
     @files
-    |> Enum.map(&diagonal_position_names_for_file(&1, position))
+    |> Enum.map(&bishop_position_names_for_file(&1, position))
     |> List.flatten()
     |> delete_all(position)
     |> delete_invalid
   end
 
-  defp diagonal_position_names_for_file(destination_file, %Position{file: source_file, rank: source_rank}) do
+  defp bishop_position_names_for_file(destination_file, %Position{file: source_file, rank: source_rank}) do
     distance = @file_index[destination_file] - @file_index[source_file]
     [Position.name(destination_file, source_rank + distance), Position.name(destination_file, source_rank - distance)]
   end
@@ -159,19 +156,17 @@ defmodule Chess.Board do
     |> delete_all(position)
   end
 
-  defp adjacent_column_position_names(position) do
-    column_position_names(position)
-    |> Enum.filter(&(rank_distance(&1, position) == 1))
+  defp relative_position_names(deltas, position) do
+    Enum.map(deltas, fn [file, rank] ->
+      relative_position_name(position, file, rank)
+    end)
   end
 
-  defp adjacent_row_position_names(position) do
-    row_position_names(position)
-    |> Enum.filter(&(file_distance(&1, position) == 1))
-  end
-
-  defp adjacent_diagonal_position_names(position) do
-    diagonal_position_names(position)
-    |> Enum.filter(&(file_distance(&1, position) == 1))
+  defp relative_position_name(position, file_delta, rank_delta) do
+    Position.name(
+      @reverse_file_index[@file_index[position.file] + file_delta],
+      position.rank + rank_delta
+    )
   end
 end
 

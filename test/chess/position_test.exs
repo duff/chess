@@ -20,6 +20,8 @@ defmodule Chess.PositionTest do
 
     assert Position.valid?(%Position{file: :b, rank: 1})
     assert Position.valid?(%Position{file: :b, rank: 8})
+    assert !Position.valid?(%Position{file: nil, rank: 8})
+    assert !Position.valid?(%Position{file: "2", rank: 8})
 
     assert Position.valid?(:d4)
     assert !Position.valid?(:"d-4")
