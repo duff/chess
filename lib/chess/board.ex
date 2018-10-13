@@ -94,6 +94,24 @@ defmodule Chess.Board do
     |> delete_invalid()
   end
 
+  defp do_positions(_board, %Piece{role: :pawn, color: :white}, position = %Chess.Position{rank: 2}) do
+    [[0, 1], [0, 2]]
+    |> relative_position_names(position)
+  end
+
+  defp do_positions(_board, %Piece{role: :pawn, color: :white}, position) do
+    relative_position_names([[0, 1]], position)
+  end
+
+  defp do_positions(_board, %Piece{role: :pawn, color: :black}, position = %Chess.Position{rank: 7}) do
+    [[0, -1], [0, -2]]
+    |> relative_position_names(position)
+  end
+
+  defp do_positions(_board, %Piece{role: :pawn, color: :black}, position) do
+    relative_position_names([[0, -1]], position)
+  end
+
   defp rook_positions_names(position) do
     column_position_names(position) ++ row_position_names(position)
   end

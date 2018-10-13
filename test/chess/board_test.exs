@@ -79,4 +79,34 @@ defmodule Chess.BoardTest do
     board = %Board{a1: Piece.white_knight()}
     assert Board.positions(board, :a1) == ~w[c2 b3]a
   end
+
+  describe "white pawn positions" do
+    test "from 2nd rank" do
+      board = %Board{d2: Piece.white_pawn()}
+      assert Board.positions(board, :d2) == ~w[d3 d4]a
+    end
+
+    test "from a rank greater than the 2nd rank" do
+      board = %Board{d3: Piece.white_pawn()}
+      assert Board.positions(board, :d3) == ~w[d4]a
+    end
+
+    test "captures" do
+    end
+  end
+
+  describe "black pawn positions" do
+    test "from 7th rank" do
+      board = %Board{d7: Piece.black_pawn()}
+      assert Board.positions(board, :d7) == ~w[d6 d5]a
+    end
+
+    test "from a rank less than the 7th rank" do
+      board = %Board{d6: Piece.black_pawn()}
+      assert Board.positions(board, :d6) == ~w[d5]a
+    end
+
+    test "captures" do
+    end
+  end
 end
