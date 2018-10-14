@@ -94,23 +94,17 @@ defmodule Chess.Board do
     |> delete_invalid()
   end
 
-  defp do_positions(_board, %Piece{role: :pawn, color: :white}, position = %Chess.Position{rank: 2}) do
-    [[0, 1], [0, 2]]
+  defp do_positions(board, piece = %Piece{role: :pawn}, position) do
+    forward_positions(piece, position)
     |> relative_position_names(position)
+    |> delete_invalid()
+    |> Kernel.++(pawn_capture_position_names(board, piece, position))
   end
 
-  defp do_positions(_board, %Piece{role: :pawn, color: :white}, position) do
-    relative_position_names([[0, 1]], position)
-  end
-
-  defp do_positions(_board, %Piece{role: :pawn, color: :black}, position = %Chess.Position{rank: 7}) do
-    [[0, -1], [0, -2]]
-    |> relative_position_names(position)
-  end
-
-  defp do_positions(_board, %Piece{role: :pawn, color: :black}, position) do
-    relative_position_names([[0, -1]], position)
-  end
+  defp forward_positions(%Piece{color: :white}, %Chess.Position{rank: 2}), do: [[0, 1], [0, 2]]
+  defp forward_positions(%Piece{color: :white}, _), do: [[0, 1]]
+  defp forward_positions(%Piece{color: :black}, %Chess.Position{rank: 7}), do: [[0, -1], [0, -2]]
+  defp forward_positions(%Piece{color: :black}, _), do: [[0, -1]]
 
   defp rook_positions_names(position) do
     column_position_names(position) ++ row_position_names(position)
@@ -128,6 +122,25 @@ defmodule Chess.Board do
     distance = @file_index[destination_file] - @file_index[source_file]
     [Position.name(destination_file, source_rank + distance), Position.name(destination_file, source_rank - distance)]
   end
+
+  defp pawn_capture_position_names(board, piece, position) do
+    possible_pawn_capture_position_names(piece)
+    |> relative_position_names(position)
+    |> delete_invalid()
+    |> Enum.filter(fn each -> capturable(piece, piece(board, each)) end)
+  end
+
+  defp possible_pawn_capture_position_names(%Piece{color: :white}) do
+    [[1, 1], [-1, 1]]
+  end
+
+  defp possible_pawn_capture_position_names(%Piece{color: :black}) do
+    [[1, -1], [-1, -1]]
+  end
+
+  defp capturable(_, nil), do: false
+  defp capturable(%Piece{color: same_color}, %Piece{color: same_color}), do: false
+  defp capturable(_, _), do: true
 
   defp delete_all(list, position) do
     list

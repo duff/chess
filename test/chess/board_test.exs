@@ -91,7 +91,17 @@ defmodule Chess.BoardTest do
       assert Board.positions(board, :d3) == ~w[d4]a
     end
 
+    test "from the top rank" do
+      board = %Board{d8: Piece.white_pawn()}
+      assert Board.positions(board, :d8) == ~w[]a
+    end
+
     test "captures" do
+      board = %Board{d3: Piece.white_pawn(), e4: Piece.black_bishop()}
+      assert Board.positions(board, :d3) == ~w[d4 e4]a
+
+      board = %Board{d2: Piece.white_pawn(), e3: Piece.black_bishop(), c3: Piece.black_queen()}
+      assert Board.positions(board, :d2) == ~w[d3 d4 e3 c3]a
     end
   end
 
@@ -106,7 +116,17 @@ defmodule Chess.BoardTest do
       assert Board.positions(board, :d6) == ~w[d5]a
     end
 
+    test "from the bottom rank" do
+      board = %Board{d1: Piece.black_pawn()}
+      assert Board.positions(board, :d1) == ~w[]a
+    end
+
     test "captures" do
+      board = %Board{d6: Piece.black_pawn(), e5: Piece.white_rook()}
+      assert Board.positions(board, :d6) == ~w[d5 e5]a
+
+      board = %Board{d7: Piece.black_pawn(), e6: Piece.white_knight(), c6: Piece.white_bishop()}
+      assert Board.positions(board, :d7) == ~w[d6 d5 e6 c6]a
     end
   end
 end
