@@ -47,6 +47,10 @@ defmodule Chess.Board do
     Map.fetch!(board, Position.name(file, rank))
   end
 
+  def piece(board, position = %Position{}) do
+    Map.fetch!(board, Position.name(position))
+  end
+
   def piece(board, position_name) do
     Map.fetch!(board, position_name)
   end
@@ -74,12 +78,12 @@ defmodule Chess.Board do
     rook_positions_names(position)
   end
 
-  defp do_positions(_board, %Piece{role: :bishop}, position) do
-    bishop_position_names(position)
+  defp do_positions(board, %Piece{role: :bishop}, position) do
+    bishop_position_names(board, position)
   end
 
-  defp do_positions(_board, %Piece{role: :queen}, position) do
-    rook_positions_names(position) ++ bishop_position_names(position)
+  defp do_positions(board, %Piece{role: :queen}, position) do
+    rook_positions_names(position) ++ bishop_position_names(board, position)
   end
 
   defp do_positions(_board, %Piece{role: :king}, position) do
@@ -110,17 +114,47 @@ defmodule Chess.Board do
     column_position_names(position) ++ row_position_names(position)
   end
 
-  defp bishop_position_names(position) do
-    @files
-    |> Enum.map(&bishop_position_names_for_file(&1, position))
-    |> List.flatten()
-    |> delete_all(position)
-    |> delete_invalid
+  defp bishop_position_names(board, position) do
+    yo_positions_names(board, position, 1, 1) ++
+      yo_positions_names(board, position, 1, -1) ++
+      yo_positions_names(board, position, -1, -1) ++ yo_positions_names(board, position, -1, 1)
   end
 
-  defp bishop_position_names_for_file(destination_file, %Position{file: source_file, rank: source_rank}) do
-    distance = @file_index[destination_file] - @file_index[source_file]
-    [Position.name(destination_file, source_rank + distance), Position.name(destination_file, source_rank - distance)]
+  defp blah(position_names, board, position) do
+    %Piece{color: moving_piece_color} = Board.piece(board, position)
+
+    position_names
+    |> Enum.reduce_while([], fn each, acc ->
+      # piece = Board.piece(board, each)
+      # cond do
+      #   piece == nil ->
+      #     {:cont, acc ++ [each]}
+      #   piece.color != Board.piece(board, position).color ->
+      #     {:halt, acc ++ [each]}
+      #   true ->
+      #     {:halt, acc}
+      # end
+      case Board.piece(board, each) do
+        nil -> {:cont, acc ++ [each]}
+        %Piece{color: ^moving_piece_color} -> {:halt, acc}
+        _ -> {:halt, acc ++ [each]}
+      end
+
+      # cond do
+      #   piece == nil ->
+      #     {:cont, acc ++ [each]}
+      #   piece.color != Board.piece(board, position).color ->
+      #     {:halt, acc ++ [each]}
+      #   true ->
+      #     {:halt, acc}
+      # end
+    end)
+  end
+
+  defp yo_positions_names(board, position, file_multiple, rank_multiple) do
+    Enum.map(1..7, &relative_position_name(position, &1 * file_multiple, &1 * rank_multiple))
+    |> delete_invalid
+    |> blah(board, position)
   end
 
   defp pawn_capture_position_names(board, piece, position) do
