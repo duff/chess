@@ -14,6 +14,14 @@ defmodule Chess.Position do
     {:error, "Invalid position"}
   end
 
+  for rank <- @valid_ranks,
+      file <- @valid_files do
+    def unquote(:"#{file}#{rank}")() do
+      {:ok, position} = Position.new(unquote(file), unquote(rank))
+      position
+    end
+  end
+
   def name(%Position{rank: rank, file: file}) do
     name(file, rank)
   end

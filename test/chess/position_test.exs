@@ -13,6 +13,12 @@ defmodule Chess.PositionTest do
     assert {:error, "Invalid position"} = Position.new(:e, nil)
   end
 
+  test "function shortcuts" do
+    assert Position.d4() == %Position{file: :d, rank: 4}
+    assert Position.d5() == %Position{file: :d, rank: 5}
+    assert Position.g1() == %Position{file: :g, rank: 1}
+  end
+
   test "name" do
     assert Position.name(:a, 4) == :a4
     assert Position.name(:e, 7) == :e7
