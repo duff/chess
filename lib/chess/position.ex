@@ -3,10 +3,22 @@ defmodule Chess.Position do
 
   alias Chess.Position
 
+  @valid_ranks 1..8
+  @valid_files ~w(a b c d e f g h)a
+
+  def new(file, rank) when rank in @valid_ranks and file in @valid_files do
+    {:ok, %Position{file: file, rank: rank}}
+  end
+
+  def new(_file, _rank) do
+    {:error, "Invalid position"}
+  end
+
   def name(%Position{rank: rank, file: file}) do
     name(file, rank)
   end
 
+  # Remove
   def name(file, rank) do
     "#{file}#{rank}"
     |> String.to_atom()
