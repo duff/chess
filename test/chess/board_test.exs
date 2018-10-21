@@ -3,6 +3,7 @@ defmodule Chess.BoardTest do
 
   alias Chess.Board
   alias Chess.Piece
+  alias Chess.Position
 
   test "starting_position" do
     board = Board.starting_position()
@@ -154,9 +155,9 @@ defmodule Chess.BoardTest do
     assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6]a)
   end
 
-  defp assert_positions(board, position_name, expected_positions) do
-    sorted_actual = Board.positions(board, position_name) |> Enum.sort()
-    sorted_expected = expected_positions |> Enum.sort()
-    assert sorted_actual == sorted_expected
+  defp assert_positions(board, from_position_name, expected_position_names) do
+    expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
+    from_position = Position.for(from_position_name)
+    assert Board.positions(board, from_position) == expected_positions
   end
 end

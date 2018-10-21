@@ -15,10 +15,8 @@ defmodule Chess.Board do
   alias Chess.Position
   alias Chess.Move
 
-  @files ~w(a b c d e f g h)a
-  @ranks 1..8
-  @file_index Enum.with_index(@files, 1) |> Map.new()
-  @reverse_file_index Enum.zip(1..8, @files) |> Map.new()
+  @file_index Enum.with_index(Position.files(), 1) |> Map.new()
+  @reverse_file_index Enum.zip(Position.ranks(), Position.files()) |> Map.new()
 
   def starting_position do
     %Board{
@@ -44,7 +42,8 @@ defmodule Chess.Board do
   end
 
   def piece(board, file, rank) do
-    Map.fetch!(board, Position.name(file, rank))
+    {:ok, position} = Position.new(file, rank)
+    piece(board, position)
   end
 
   def piece(board, position = %Position{}) do
@@ -69,40 +68,41 @@ defmodule Chess.Board do
     end
   end
 
-  def positions(board, from) do
-    from_piece = Board.piece(board, from)
-    do_positions(board, from_piece, Position.for(from))
+  def positions(board, from = %Position{}) do
+    from_piece = piece(board, from)
+    do_positions(board, from_piece, from)
   end
 
   defp do_positions(_board, %Piece{role: :rook}, position) do
-    rook_positions_names(position)
+    rook_positions(position)
   end
 
   defp do_positions(board, %Piece{role: :bishop}, position) do
-    bishop_position_names(board, position)
+    bishop_positions(board, position)
   end
 
   defp do_positions(board, %Piece{role: :queen}, position) do
-    rook_positions_names(position) ++ bishop_position_names(board, position)
+    rook_positions(position)
+    |> MapSet.union(bishop_positions(board, position))
   end
 
   defp do_positions(_board, %Piece{role: :king}, position) do
     [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
-    |> relative_position_names(position)
-    |> delete_invalid()
+    |> relative_positions(position)
+    |> MapSet.new()
   end
 
   defp do_positions(_board, %Piece{role: :knight}, position) do
     [[-2, 1], [-2, -1], [2, 1], [2, -1], [-1, 2], [-1, -2], [1, 2], [1, -2]]
-    |> relative_position_names(position)
-    |> delete_invalid()
+    |> relative_positions(position)
+    |> MapSet.new()
   end
 
   defp do_positions(board, piece = %Piece{role: :pawn}, position) do
     forward_positions(piece, position)
-    |> relative_position_names(position)
-    |> delete_invalid()
-    |> Kernel.++(pawn_capture_position_names(board, piece, position))
+    |> relative_positions(position)
+    |> MapSet.new()
+    |> MapSet.union(pawn_capture_positions(board, piece, position))
   end
 
   defp forward_positions(%Piece{color: :white}, %Chess.Position{rank: 2}), do: [[0, 1], [0, 2]]
@@ -110,14 +110,18 @@ defmodule Chess.Board do
   defp forward_positions(%Piece{color: :black}, %Chess.Position{rank: 7}), do: [[0, -1], [0, -2]]
   defp forward_positions(%Piece{color: :black}, _), do: [[0, -1]]
 
-  defp rook_positions_names(position) do
-    column_position_names(position) ++ row_position_names(position)
+  defp rook_positions(position) do
+    north_positions(position)
+    |> MapSet.union(south_positions(position))
+    |> MapSet.union(east_positions(position))
+    |> MapSet.union(west_positions(position))
   end
 
-  defp bishop_position_names(board, position) do
-    diagonal_positions_names(board, position, 1, 1) ++
-      diagonal_positions_names(board, position, 1, -1) ++
-      diagonal_positions_names(board, position, -1, -1) ++ diagonal_positions_names(board, position, -1, 1)
+  defp bishop_positions(board, position) do
+    diagonal_positions(board, position, 1, 1)
+    |> MapSet.union(diagonal_positions(board, position, 1, -1))
+    |> MapSet.union(diagonal_positions(board, position, -1, -1))
+    |> MapSet.union(diagonal_positions(board, position, -1, 1))
   end
 
   defp until_piece_found(position_names, board, position) do
@@ -133,40 +137,32 @@ defmodule Chess.Board do
     end)
   end
 
-  defp diagonal_positions_names(board, position, file_multiple, rank_multiple) do
-    Enum.map(1..7, &relative_position_name(position, &1 * file_multiple, &1 * rank_multiple))
-    |> delete_invalid
+  defp diagonal_positions(board, position, file_multiple, rank_multiple) do
+    7..1
+    |> Enum.map(&[&1 * file_multiple, &1 * rank_multiple])
+    |> relative_positions(position)
     |> until_piece_found(board, position)
+    |> MapSet.new()
   end
 
-  defp pawn_capture_position_names(board, piece, position) do
-    possible_pawn_capture_position_names(piece)
-    |> relative_position_names(position)
-    |> delete_invalid()
+  defp pawn_capture_positions(board, piece, position) do
+    possible_pawn_capture_deltas(piece)
+    |> relative_positions(position)
     |> Enum.filter(fn each -> capturable(piece, piece(board, each)) end)
+    |> MapSet.new()
   end
 
-  defp possible_pawn_capture_position_names(%Piece{color: :white}) do
+  defp possible_pawn_capture_deltas(%Piece{color: :white}) do
     [[1, 1], [-1, 1]]
   end
 
-  defp possible_pawn_capture_position_names(%Piece{color: :black}) do
+  defp possible_pawn_capture_deltas(%Piece{color: :black}) do
     [[1, -1], [-1, -1]]
   end
 
   defp capturable(_, nil), do: false
   defp capturable(%Piece{color: same_color}, %Piece{color: same_color}), do: false
   defp capturable(_, _), do: true
-
-  defp delete_all(list, position) do
-    list
-    |> Enum.reject(&(&1 == Position.name(position)))
-  end
-
-  defp delete_invalid(list) do
-    list
-    |> Enum.reject(&(!Position.valid?(&1)))
-  end
 
   defp do_move(board, from, to, from_piece, to_piece) do
     after_board = %{board | to => from_piece, from => nil}
@@ -191,29 +187,45 @@ defmodule Chess.Board do
     |> Map.new(fn key -> {key, Piece.black_pawn()} end)
   end
 
-  defp column_position_names(position = %Position{file: file}) do
-    @ranks
-    |> Enum.map(fn each_rank -> Position.name(file, each_rank) end)
-    |> delete_all(position)
+  defp north_positions(position) do
+    7..1
+    |> Enum.map(&[0, &1])
+    |> relative_positions(position)
+    |> MapSet.new()
   end
 
-  defp row_position_names(position = %Position{rank: rank}) do
-    @files
-    |> Enum.map(fn each_file -> Position.name(each_file, rank) end)
-    |> delete_all(position)
+  defp south_positions(position) do
+    -7..-1
+    |> Enum.map(&[0, &1])
+    |> relative_positions(position)
+    |> MapSet.new()
   end
 
-  defp relative_position_names(deltas, position) do
-    Enum.map(deltas, fn [file, rank] ->
-      relative_position_name(position, file, rank)
+  defp east_positions(position) do
+    7..1
+    |> Enum.map(&[&1, 0])
+    |> relative_positions(position)
+    |> MapSet.new()
+  end
+
+  defp west_positions(position) do
+    -7..-1
+    |> Enum.map(&[&1, 0])
+    |> relative_positions(position)
+    |> MapSet.new()
+  end
+
+  defp relative_positions(deltas, position) do
+    Enum.reduce(deltas, [], fn [file, rank], acc ->
+      case relative_position(position, file, rank) do
+        {:ok, new_position} -> [new_position | acc]
+        {:error, _} -> acc
+      end
     end)
   end
 
-  defp relative_position_name(position, file_delta, rank_delta) do
-    Position.name(
-      @reverse_file_index[@file_index[position.file] + file_delta],
-      position.rank + rank_delta
-    )
+  defp relative_position(position, file_delta, rank_delta) do
+    Position.new(@reverse_file_index[@file_index[position.file] + file_delta], position.rank + rank_delta)
   end
 end
 
