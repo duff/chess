@@ -115,46 +115,28 @@ defmodule Chess.Board do
   end
 
   defp bishop_position_names(board, position) do
-    yo_positions_names(board, position, 1, 1) ++
-      yo_positions_names(board, position, 1, -1) ++
-      yo_positions_names(board, position, -1, -1) ++ yo_positions_names(board, position, -1, 1)
+    diagonal_positions_names(board, position, 1, 1) ++
+      diagonal_positions_names(board, position, 1, -1) ++
+      diagonal_positions_names(board, position, -1, -1) ++ diagonal_positions_names(board, position, -1, 1)
   end
 
-  defp blah(position_names, board, position) do
+  defp until_piece_found(position_names, board, position) do
     %Piece{color: moving_piece_color} = Board.piece(board, position)
 
     position_names
     |> Enum.reduce_while([], fn each, acc ->
-      # piece = Board.piece(board, each)
-      # cond do
-      #   piece == nil ->
-      #     {:cont, acc ++ [each]}
-      #   piece.color != Board.piece(board, position).color ->
-      #     {:halt, acc ++ [each]}
-      #   true ->
-      #     {:halt, acc}
-      # end
       case Board.piece(board, each) do
         nil -> {:cont, acc ++ [each]}
         %Piece{color: ^moving_piece_color} -> {:halt, acc}
         _ -> {:halt, acc ++ [each]}
       end
-
-      # cond do
-      #   piece == nil ->
-      #     {:cont, acc ++ [each]}
-      #   piece.color != Board.piece(board, position).color ->
-      #     {:halt, acc ++ [each]}
-      #   true ->
-      #     {:halt, acc}
-      # end
     end)
   end
 
-  defp yo_positions_names(board, position, file_multiple, rank_multiple) do
+  defp diagonal_positions_names(board, position, file_multiple, rank_multiple) do
     Enum.map(1..7, &relative_position_name(position, &1 * file_multiple, &1 * rank_multiple))
     |> delete_invalid
-    |> blah(board, position)
+    |> until_piece_found(board, position)
   end
 
   defp pawn_capture_position_names(board, piece, position) do
