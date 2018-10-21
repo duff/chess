@@ -179,6 +179,38 @@ defmodule Chess.BoardTest do
     assert_positions(board, :d4, ~w[a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
   end
 
+  test "queen positions when blocked by own color" do
+    board = %Board{
+      d4: Piece.white_queen(),
+      g4: Piece.white_rook(),
+      d2: Piece.white_pawn(),
+      a4: Piece.white_knight(),
+      d7: Piece.white_pawn(),
+      f6: Piece.white_rook(),
+      f2: Piece.white_pawn(),
+      c3: Piece.white_knight(),
+      b6: Piece.white_pawn()
+    }
+
+    assert_positions(board, :d4, ~w[c5 e5 e3 d3 d5 d6 b4 c4 e4 f4]a)
+  end
+
+  test "queen positions when blocked by opponent color" do
+    board = %Board{
+      d4: Piece.white_queen(),
+      f6: Piece.black_rook(),
+      f2: Piece.black_pawn(),
+      c3: Piece.black_pawn(),
+      b6: Piece.black_bishop(),
+      g4: Piece.black_rook(),
+      d2: Piece.black_pawn(),
+      a4: Piece.black_knight(),
+      d7: Piece.black_queen()
+    }
+
+    assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6 a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
+  end
+
   defp assert_positions(board, from_position_name, expected_position_names) do
     expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
     from_position = Position.for(from_position_name)
