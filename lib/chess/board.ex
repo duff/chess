@@ -189,30 +189,34 @@ defmodule Chess.Board do
 
   defp north_positions(board, position) do
     7..1
-    |> Enum.map(&[0, &1])
-    |> relative_positions(position)
-    |> until_piece_found(board, position)
-    |> MapSet.new()
+    |> column_positions(board, position)
   end
 
   defp south_positions(board, position) do
     -7..-1
+    |> column_positions(board, position)
+  end
+
+  defp east_positions(board, position) do
+    7..1
+    |> row_positions(board, position)
+  end
+
+  defp west_positions(board, position) do
+    -7..-1
+    |> row_positions(board, position)
+  end
+
+  defp column_positions(deltas, board, position) do
+    deltas
     |> Enum.map(&[0, &1])
     |> relative_positions(position)
     |> until_piece_found(board, position)
     |> MapSet.new()
   end
 
-  defp east_positions(board, position) do
-    7..1
-    |> Enum.map(&[&1, 0])
-    |> relative_positions(position)
-    |> until_piece_found(board, position)
-    |> MapSet.new()
-  end
-
-  defp west_positions(board, position) do
-    -7..-1
+  defp row_positions(deltas, board, position) do
+    deltas
     |> Enum.map(&[&1, 0])
     |> relative_positions(position)
     |> until_piece_found(board, position)
