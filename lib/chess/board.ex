@@ -73,8 +73,8 @@ defmodule Chess.Board do
     do_positions(board, from_piece, from)
   end
 
-  defp do_positions(_board, %Piece{role: :rook}, position) do
-    rook_positions(position)
+  defp do_positions(board, %Piece{role: :rook}, position) do
+    rook_positions(board, position)
   end
 
   defp do_positions(board, %Piece{role: :bishop}, position) do
@@ -82,7 +82,7 @@ defmodule Chess.Board do
   end
 
   defp do_positions(board, %Piece{role: :queen}, position) do
-    rook_positions(position)
+    rook_positions(board, position)
     |> MapSet.union(bishop_positions(board, position))
   end
 
@@ -110,11 +110,11 @@ defmodule Chess.Board do
   defp forward_positions(%Piece{color: :black}, %Chess.Position{rank: 7}), do: [[0, -1], [0, -2]]
   defp forward_positions(%Piece{color: :black}, _), do: [[0, -1]]
 
-  defp rook_positions(position) do
-    north_positions(position)
-    |> MapSet.union(south_positions(position))
-    |> MapSet.union(east_positions(position))
-    |> MapSet.union(west_positions(position))
+  defp rook_positions(board, position) do
+    north_positions(board, position)
+    |> MapSet.union(south_positions(board, position))
+    |> MapSet.union(east_positions(board, position))
+    |> MapSet.union(west_positions(board, position))
   end
 
   defp bishop_positions(board, position) do
@@ -187,31 +187,35 @@ defmodule Chess.Board do
     |> Map.new(fn key -> {key, Piece.black_pawn()} end)
   end
 
-  defp north_positions(position) do
+  defp north_positions(board, position) do
     7..1
     |> Enum.map(&[0, &1])
     |> relative_positions(position)
+    |> until_piece_found(board, position)
     |> MapSet.new()
   end
 
-  defp south_positions(position) do
+  defp south_positions(board, position) do
     -7..-1
     |> Enum.map(&[0, &1])
     |> relative_positions(position)
+    |> until_piece_found(board, position)
     |> MapSet.new()
   end
 
-  defp east_positions(position) do
+  defp east_positions(board, position) do
     7..1
     |> Enum.map(&[&1, 0])
     |> relative_positions(position)
+    |> until_piece_found(board, position)
     |> MapSet.new()
   end
 
-  defp west_positions(position) do
+  defp west_positions(board, position) do
     -7..-1
     |> Enum.map(&[&1, 0])
     |> relative_positions(position)
+    |> until_piece_found(board, position)
     |> MapSet.new()
   end
 
