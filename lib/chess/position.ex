@@ -11,7 +11,22 @@ defmodule Chess.Position do
   end
 
   def new(_file, _rank) do
-    {:error, "Invalid position"}
+    {:error, "Invalid position."}
+  end
+
+  def new(position_name) when is_atom(position_name) do
+    position_name
+    |> Atom.to_string()
+    |> new()
+  end
+
+  def new(position_name) when is_binary(position_name) do
+    {file, rank} = position_name |> String.split_at(1)
+    Position.new(String.to_atom(file), integer_for(rank))
+  end
+
+  def new(_position_name) do
+    {:error, "Invalid position."}
   end
 
   for rank <- @ranks,
@@ -28,14 +43,17 @@ defmodule Chess.Position do
   end
 
   def for(name) do
-    {file, rank} = Atom.to_string(name) |> String.split_at(1)
-    {:ok, position} = Position.new(String.to_atom(file), integer_for(rank))
+    {:ok, position} = new(name)
     position
   end
 
   def files, do: @files
   def ranks, do: @ranks
 
-  defp integer_for(""), do: 0
-  defp integer_for(rank), do: String.to_integer(rank)
+  defp integer_for(rank) do
+    case Integer.parse(rank) do
+      {value, ""} -> value
+      _ -> 0
+    end
+  end
 end

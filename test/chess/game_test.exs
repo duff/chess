@@ -5,6 +5,7 @@ defmodule Chess.GameTest do
   alias Chess.Board
   alias Chess.Piece
   alias Chess.Move
+  alias Chess.Position
 
   test "board starts out in the right position" do
     assert %Game{}.board == Board.starting_position()
@@ -13,13 +14,13 @@ defmodule Chess.GameTest do
   test "move successful" do
     {:ok, game} = %Game{} |> Game.move(:e2, :e4)
 
-    assert Board.piece(game.board, :e4) == Piece.white_pawn()
-    assert Board.piece(game.board, :e2) == nil
-    assert [%Move{from: :e2, to: :e4}] = game.moves
+    assert Board.piece(game.board, Position.e4()) == Piece.white_pawn()
+    assert Board.piece(game.board, Position.e2()) == nil
+    assert [%Move{from: %Position{file: :e, rank: 2}, to: %Position{file: :e, rank: 4}}] = game.moves
   end
 
-  test "from and to cannot be the same" do
+  test "move unsuccessful if the Board disallows it" do
     {:error, message} = %Game{} |> Game.move(:e2, :e2)
-    assert message == "Unable to move to the same place."
+    assert message == "That is not a legal move."
   end
 end

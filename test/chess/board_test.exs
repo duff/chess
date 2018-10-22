@@ -19,8 +19,8 @@ defmodule Chess.BoardTest do
   test "move successful" do
     {:ok, move} = Board.starting_position() |> Board.move(:e2, :e4)
 
-    assert move.from == :e2
-    assert move.to == :e4
+    assert move.from == Position.e2()
+    assert move.to == Position.e4()
     assert move.captured == nil
     assert move.before_board.e2 == Piece.white_pawn()
     assert move.before_board.e4 == nil
@@ -31,54 +31,78 @@ defmodule Chess.BoardTest do
     assert move.after_board.e4 == Piece.white_pawn()
   end
 
-  test "moving the same place - fail" do
-    {:error, message} = Board.starting_position() |> Board.move(:e2, :e2)
-    assert message == "Unable to move to the same place."
+  describe "move failures" do
+    test "moving to the same place" do
+      {:error, message} = Board.starting_position() |> Board.move(:e2, :e2)
+      assert message == "That is not a legal move."
+    end
+
+    test "moving to a square occupied by the same color" do
+      {:error, message} = Board.starting_position() |> Board.move(:e2, :d2)
+      assert message == "That is not a legal move."
+    end
+
+    test "moving a piece to an unreachable position based on the piece and board" do
+      {:error, message} = Board.starting_position() |> Board.move(:d2, :g6)
+      assert message == "That is not a legal move."
+    end
+
+    test "moving to a non-existent position" do
+      {:error, message} = Board.starting_position() |> Board.move(:d2, :z6)
+      assert message == "Invalid position."
+    end
+
+    test "moving from a non-existent position" do
+      {:error, message} = Board.starting_position() |> Board.move(:z5, :d4)
+      assert message == "Invalid position."
+    end
+
+    test "moving from a position that has no piece" do
+      {:error, message} = Board.starting_position() |> Board.move(:e5, :e6)
+      assert message == "That is not a legal move."
+    end
   end
 
-  test "moving to a square occupied by the same color - fail" do
-    {:error, message} = Board.starting_position() |> Board.move(:e2, :d2)
-    assert message == "Unable to move to a position occupied by your own color."
-  end
+  describe "basic positions" do
+    test "rook" do
+      board = %Board{d4: Piece.white_rook()}
+      assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4]a)
 
-  test "basic rook positions" do
-    board = %Board{d4: Piece.white_rook()}
-    assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4]a)
+      board = %Board{a1: Piece.white_rook()}
+      assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1]a)
+    end
 
-    board = %Board{a1: Piece.white_rook()}
-    assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1]a)
-  end
+    test "bishop" do
+      board = %Board{d4: Piece.white_bishop()}
+      assert_positions(board, :d4, ~w[a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
 
-  test "basic bishop positions" do
-    board = %Board{d4: Piece.white_bishop()}
-    assert_positions(board, :d4, ~w[a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
+      board = %Board{a1: Piece.white_bishop()}
+      assert_positions(board, :a1, ~w[b2 c3 d4 e5 f6 g7 h8]a)
+    end
 
-    board = %Board{a1: Piece.white_bishop()}
-    assert_positions(board, :a1, ~w[b2 c3 d4 e5 f6 g7 h8]a)
-  end
+    test "king" do
+      board = %Board{d4: Piece.white_king()}
+      assert_positions(board, :d4, ~w[e4 c4 d5 d3 e5 e3 c3 c5]a)
 
-  test "basic king positions" do
-    board = %Board{d4: Piece.white_king()}
-    assert_positions(board, :d4, ~w[e4 c4 d5 d3 e5 e3 c3 c5]a)
+      board = %Board{a1: Piece.white_king()}
+      assert_positions(board, :a1, ~w[b1 a2 b2]a)
+    end
 
-    board = %Board{a1: Piece.white_king()}
-    assert_positions(board, :a1, ~w[b1 a2 b2]a)
-  end
+    test "queen" do
+      board = %Board{d4: Piece.white_queen()}
+      assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4 a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
 
-  test "basic queen positions" do
-    board = %Board{d4: Piece.white_queen()}
-    assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4 a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
+      board = %Board{a1: Piece.white_queen()}
+      assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1 b2 c3 d4 e5 f6 g7 h8]a)
+    end
 
-    board = %Board{a1: Piece.white_queen()}
-    assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1 b2 c3 d4 e5 f6 g7 h8]a)
-  end
+    test "knight" do
+      board = %Board{d4: Piece.white_knight()}
+      assert_positions(board, :d4, ~w[b5 b3 f5 f3 c6 c2 e6 e2]a)
 
-  test "basic knight positions" do
-    board = %Board{d4: Piece.white_knight()}
-    assert_positions(board, :d4, ~w[b5 b3 f5 f3 c6 c2 e6 e2]a)
-
-    board = %Board{a1: Piece.white_knight()}
-    assert_positions(board, :a1, ~w[c2 b3]a)
+      board = %Board{a1: Piece.white_knight()}
+      assert_positions(board, :a1, ~w[c2 b3]a)
+    end
   end
 
   describe "white pawn positions" do
@@ -214,6 +238,6 @@ defmodule Chess.BoardTest do
   defp assert_positions(board, from_position_name, expected_position_names) do
     expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
     from_position = Position.for(from_position_name)
-    assert Board.positions(board, from_position) == expected_positions
+    assert Board.possible_positions(board, from_position) == {:ok, expected_positions}
   end
 end

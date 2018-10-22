@@ -50,60 +50,73 @@ defmodule Chess.Board do
     Map.fetch!(board, Position.name(position))
   end
 
-  def piece(board, position_name) do
-    Map.fetch!(board, position_name)
-  end
-
-  def move(_board, same_from_to, same_from_to) do
-    {:error, "Unable to move to the same place."}
-  end
-
-  def move(board, from, to) do
-    from_piece = Board.piece(board, from)
-    to_piece = Board.piece(board, to)
-
-    case legal?(from_piece, to_piece) do
-      :ok -> do_move(board, from, to, from_piece, to_piece)
-      {:error, message} -> {:error, message}
+  def move(board, from_position_name, to_position_name) do
+    with {:ok, from} <- Position.new(from_position_name),
+         {:ok, to} <- Position.new(to_position_name),
+         {:ok, possible_positions} <- possible_positions(board, from) do
+      if MapSet.member?(possible_positions, to) do
+        do_move(board, from, to)
+      else
+        {:error, "That is not a legal move."}
+      end
     end
   end
 
-  def positions(board, from = %Position{}) do
+  defp do_move(board, from, to) do
     from_piece = piece(board, from)
-    do_positions(board, from_piece, from)
+    after_board = %{board | Position.name(to) => from_piece, Position.name(from) => nil}
+
+    move = %Move{from: from, to: to, before_board: board, after_board: after_board, piece: from_piece, captured: piece(board, to)}
+    {:ok, move}
   end
 
-  defp do_positions(board, %Piece{role: :rook}, position) do
-    rook_positions(board, position)
+  def possible_positions(board, from = %Position{}) do
+    from_piece = piece(board, from)
+    positions(board, from_piece, from)
   end
 
-  defp do_positions(board, %Piece{role: :bishop}, position) do
-    bishop_positions(board, position)
+  defp positions(board, %Piece{role: :rook}, position) do
+    {:ok, rook_positions(board, position)}
   end
 
-  defp do_positions(board, %Piece{role: :queen}, position) do
-    rook_positions(board, position)
-    |> MapSet.union(bishop_positions(board, position))
+  defp positions(board, %Piece{role: :bishop}, position) do
+    {:ok, bishop_positions(board, position)}
   end
 
-  defp do_positions(_board, %Piece{role: :king}, position) do
-    [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
-    |> relative_positions(position)
-    |> MapSet.new()
+  defp positions(board, %Piece{role: :queen}, position) do
+    result = rook_positions(board, position) |> MapSet.union(bishop_positions(board, position))
+    {:ok, result}
   end
 
-  defp do_positions(_board, %Piece{role: :knight}, position) do
-    [[-2, 1], [-2, -1], [2, 1], [2, -1], [-1, 2], [-1, -2], [1, 2], [1, -2]]
-    |> relative_positions(position)
-    |> MapSet.new()
+  defp positions(_board, %Piece{role: :king}, position) do
+    result =
+      [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
+      |> relative_positions(position)
+      |> MapSet.new()
+
+    {:ok, result}
   end
 
-  defp do_positions(board, piece = %Piece{role: :pawn}, position) do
-    forward_positions(piece, position)
-    |> relative_positions(position)
-    |> MapSet.new()
-    |> MapSet.union(pawn_capture_positions(board, piece, position))
+  defp positions(_board, %Piece{role: :knight}, position) do
+    result =
+      [[-2, 1], [-2, -1], [2, 1], [2, -1], [-1, 2], [-1, -2], [1, 2], [1, -2]]
+      |> relative_positions(position)
+      |> MapSet.new()
+
+    {:ok, result}
   end
+
+  defp positions(board, piece = %Piece{role: :pawn}, position) do
+    result =
+      forward_positions(piece, position)
+      |> relative_positions(position)
+      |> MapSet.new()
+      |> MapSet.union(pawn_capture_positions(board, piece, position))
+
+    {:ok, result}
+  end
+
+  defp positions(_, _, _), do: {:ok, MapSet.new()}
 
   defp forward_positions(%Piece{color: :white}, %Chess.Position{rank: 2}), do: [[0, 1], [0, 2]]
   defp forward_positions(%Piece{color: :white}, _), do: [[0, 1]]
@@ -124,10 +137,10 @@ defmodule Chess.Board do
     |> MapSet.union(diagonal_positions(board, position, -1, 1))
   end
 
-  defp until_piece_found(position_names, board, position) do
+  defp until_piece_found(positions, board, position) do
     %Piece{color: moving_piece_color} = Board.piece(board, position)
 
-    position_names
+    positions
     |> Enum.reduce_while([], fn each, acc ->
       case Board.piece(board, each) do
         nil -> {:cont, acc ++ [each]}
@@ -163,19 +176,6 @@ defmodule Chess.Board do
   defp capturable(_, nil), do: false
   defp capturable(%Piece{color: same_color}, %Piece{color: same_color}), do: false
   defp capturable(_, _), do: true
-
-  defp do_move(board, from, to, from_piece, to_piece) do
-    after_board = %{board | to => from_piece, from => nil}
-
-    move = %Move{from: from, to: to, before_board: board, after_board: after_board, piece: from_piece, captured: to_piece}
-    {:ok, move}
-  end
-
-  defp legal?(%Piece{color: same_color}, %Piece{color: same_color}) do
-    {:error, "Unable to move to a position occupied by your own color."}
-  end
-
-  defp legal?(_, _), do: :ok
 
   defp initial_white_pawns do
     ~w[a2 b2 c2 d2 e2 f2 g2 h2]a
