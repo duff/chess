@@ -1,9 +1,7 @@
 defmodule Chess.BoardTest do
   use ExUnit.Case
 
-  alias Chess.Board
-  alias Chess.Piece
-  alias Chess.Position
+  alias Chess.{Board, Piece, Position}
 
   test "starting_position" do
     board = Board.starting_position()

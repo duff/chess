@@ -1,6 +1,5 @@
 defmodule Chess.Format.Ascii do
-  alias Chess.Board
-  alias Chess.Piece
+  alias Chess.{Board, Piece}
 
   def to_s(board) do
     "#{top()}#{rank_strings(board)}#{bottom()}"

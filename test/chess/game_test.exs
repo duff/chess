@@ -1,11 +1,7 @@
 defmodule Chess.GameTest do
   use ExUnit.Case
 
-  alias Chess.Game
-  alias Chess.Board
-  alias Chess.Piece
-  alias Chess.Move
-  alias Chess.Position
+  alias Chess.{Game, Board, Piece, Move, Position}
 
   test "board starts out in the right position" do
     assert %Game{}.board == Board.starting_position()

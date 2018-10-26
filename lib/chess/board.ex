@@ -10,10 +10,7 @@ defmodule Chess.Board do
     a1 b1 c1 d1 e1 f1 g1 h1
   ]a
 
-  alias Chess.Piece
-  alias Chess.Board
-  alias Chess.Position
-  alias Chess.Move
+  alias Chess.{Piece, Board, Position, Move}
 
   @file_index Enum.with_index(Position.files(), 1) |> Map.new()
   @reverse_file_index Enum.zip(Position.ranks(), Position.files()) |> Map.new()
