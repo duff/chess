@@ -4,7 +4,9 @@ defmodule Chess.Application do
   use Application
 
   def start(_type, _args) do
-    children = []
+    children = [
+      {Registry, keys: :unique, name: Registry.Game}
+    ]
 
     opts = [strategy: :one_for_one, name: Chess.Supervisor]
     Supervisor.start_link(children, opts)
