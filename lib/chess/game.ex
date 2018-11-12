@@ -8,10 +8,10 @@ defmodule Chess.Game do
             black: nil,
             white: nil,
             rules: Rules.new(),
-            id: RandomBytes.base62()
+            id: nil
 
   def start_link() do
-    game = %Game{}
+    game = %Game{id: RandomBytes.base62()}
     GenServer.start_link(__MODULE__, game, name: via_tuple(game.id))
   end
 
