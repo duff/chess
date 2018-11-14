@@ -19,14 +19,8 @@ defmodule Chess.Game do
     GenServer.call(game, {:add_player, user, color})
   end
 
-  def move(game, from, to) do
-    case Board.move(game.board, from, to) do
-      {:ok, move} ->
-        {:ok, %{game | board: move.after_board, moves: [move | game.moves]}}
-
-      {:error, message} ->
-        {:error, message}
-    end
+  def move(game, user, from, to) do
+    GenServer.call(game, {:move, user, from, to})
   end
 
   def via_tuple(id) do
@@ -38,7 +32,8 @@ defmodule Chess.Game do
   end
 
   def handle_call({:add_player, user, color}, _from, state_data) do
-    with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}) do
+    with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}),
+         {:ok} <- add_player_allowed?(state_data, user, color) do
       state_data
       |> Map.replace!(color, user)
       |> update_rules(rules)
@@ -48,7 +43,52 @@ defmodule Chess.Game do
     end
   end
 
+  def handle_call({:move, user, from, to}, _from, state_data) do
+    # with {:ok, rules} <- Rules.check(state_data.rules, {:move, color}) do
+    #   state_data
+    #   |> Map.replace!(color, user)
+    #   |> update_rules(rules)
+    #   |> reply_success(:ok)
+    # else
+    #   {:error, message} -> {:reply, {:error, message}, state_data}
+    # end
+
+    with {:ok, rules} <- Rules.check(state_data.rules, {:move, :white}),
+         {:ok, move} <- Board.move(state_data.board, from, to) do
+      state_data
+      |> update_move(move)
+      |> update_rules(rules)
+      |> reply_success(:ok)
+    else
+      {:error, message} -> {:reply, {:error, message}, state_data}
+    end
+
+    # case Board.move(state_data.board, from, to) do
+    #   {:ok, move} ->
+    #     {:ok, %{game | board: move.after_board, moves: [move | game.moves]}}
+
+    #   {:error, message} ->
+    #     {:error, message}
+    # end
+  end
+
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
+  defp update_move(state_data, move) do
+    %{state_data | board: move.after_board, moves: [move | state_data.moves]}
+  end
+
   defp reply_success(state_data, reply), do: {:reply, reply, state_data}
+
+  defp add_player_allowed?(%Game{black: user}, user, :white) do
+    {:error, "The same player cannot play both sides of the board."}
+  end
+
+  defp add_player_allowed?(%Game{white: user}, user, :black) do
+    {:error, "The same player cannot play both sides of the board."}
+  end
+
+  defp add_player_allowed?(_, _, _) do
+    {:ok}
+  end
 end

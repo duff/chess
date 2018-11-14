@@ -1,9 +1,9 @@
 defmodule Chess.User do
-  defstruct [:email, :username]
+  defstruct [:id, :email, :username]
 
   alias Chess.User
 
   def new do
-    %User{}
+    %User{id: RandomBytes.base62()}
   end
 end
