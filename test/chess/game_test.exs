@@ -56,8 +56,8 @@ defmodule Chess.GameTest do
     user_1 = User.new()
     user_2 = User.new()
 
-    assert :ok == Game.add_player(game, user_1, :black)
-    assert :ok == Game.add_player(game, user_2, :white)
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert :ok == Game.add_player(game, user_2, :black)
 
     assert :ok == Game.move(game, user_1, :e2, :e4)
 
@@ -71,28 +71,35 @@ defmodule Chess.GameTest do
     user_1 = User.new()
     user_2 = User.new()
 
-    assert :ok == Game.add_player(game, user_1, :black)
-    assert :ok == Game.add_player(game, user_2, :white)
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert :ok == Game.add_player(game, user_2, :black)
 
     assert :ok == Game.move(game, user_1, :e2, :e4)
     assert :ok == Game.move(game, user_2, :b7, :b6)
 
-    assert %Rules{state: :black_turn} = state(game).rules
+    assert %Rules{state: :white_turn} = state(game).rules
     assert Board.piece(state(game).board, Position.b6()) == Piece.black_pawn()
     assert Board.piece(state(game).board, Position.b7()) == nil
-    assert [_, %Move{from: %Position{file: :b, rank: 7}, to: %Position{file: :b, rank: 6}}] = state(game).moves
+    assert [%Move{from: %Position{file: :b, rank: 7}, to: %Position{file: :b, rank: 6}} | _] = state(game).moves
+  end
+
+  test "move fails if the user isn't playing the game", %{game: game} do
+    assert {:error, "Unable to make a move if you're not playing the game."} == Game.move(game, User.new(), :e2, :e4)
   end
 
   test "move fails if the rules aren't followed", %{game: game} do
-    assert {:error, "Unable to take that action."} == Game.move(game, User.new(), :e2, :e4)
+    user_1 = User.new()
+
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert {:error, "Unable to take that action."} == Game.move(game, user_1, :e2, :e4)
   end
 
   test "move unsuccessful if the Board disallows it", %{game: game} do
     user_1 = User.new()
     user_2 = User.new()
 
-    assert :ok == Game.add_player(game, user_1, :black)
-    assert :ok == Game.add_player(game, user_2, :white)
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert :ok == Game.add_player(game, user_2, :black)
 
     assert {:error, "That is not a legal move."} == Game.move(game, user_1, :e2, :e8)
   end

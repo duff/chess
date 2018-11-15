@@ -44,37 +44,21 @@ defmodule Chess.Game do
   end
 
   def handle_call({:move, user, from, to}, _from, state_data) do
-    # with {:ok, rules} <- Rules.check(state_data.rules, {:move, color}) do
-    #   state_data
-    #   |> Map.replace!(color, user)
-    #   |> update_rules(rules)
-    #   |> reply_success(:ok)
-    # else
-    #   {:error, message} -> {:reply, {:error, message}, state_data}
-    # end
-
-    with {:ok, rules} <- Rules.check(state_data.rules, {:move, :white}),
+    with {:ok, color} <- color(state_data, user),
+         {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
          {:ok, move} <- Board.move(state_data.board, from, to) do
       state_data
-      |> update_move(move)
+      |> update_game_with_move(move)
       |> update_rules(rules)
       |> reply_success(:ok)
     else
       {:error, message} -> {:reply, {:error, message}, state_data}
     end
-
-    # case Board.move(state_data.board, from, to) do
-    #   {:ok, move} ->
-    #     {:ok, %{game | board: move.after_board, moves: [move | game.moves]}}
-
-    #   {:error, message} ->
-    #     {:error, message}
-    # end
   end
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
-  defp update_move(state_data, move) do
+  defp update_game_with_move(state_data, move) do
     %{state_data | board: move.after_board, moves: [move | state_data.moves]}
   end
 
@@ -90,5 +74,17 @@ defmodule Chess.Game do
 
   defp add_player_allowed?(_, _, _) do
     {:ok}
+  end
+
+  defp color(%Game{black: user}, user) do
+    {:ok, :black}
+  end
+
+  defp color(%Game{white: user}, user) do
+    {:ok, :white}
+  end
+
+  defp color(_, _) do
+    {:error, "Unable to make a move if you're not playing the game."}
   end
 end
