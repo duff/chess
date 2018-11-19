@@ -105,11 +105,28 @@ defmodule Chess.GameTest do
   end
 
   test "move unsuccessful if attempting to move your opponent's piece", %{game: game} do
-    #
+    user_1 = User.new()
+    user_2 = User.new()
+
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert :ok == Game.add_player(game, user_2, :black)
+
+    assert {:error, "Unable to move opponent's piece."} == Game.move(game, user_1, :b7, :b6)
   end
 
-  test "move unsuccessful if it's not your turn", %{game: game} do
-    #
+  test "move unsuccessful if the from or to position aren't legit", %{game: game} do
+    user_1 = User.new()
+    user_2 = User.new()
+
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert :ok == Game.add_player(game, user_2, :black)
+
+    assert {:error, "Invalid position."} == Game.move(game, user_1, :e9, :e4)
+    assert {:error, "Invalid position."} == Game.move(game, user_1, :e2, :z9)
+  end
+
+  test "remove duplication in this file" do
+    flunk("HMMM")
   end
 
   defp state(game) do

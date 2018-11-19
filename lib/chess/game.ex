@@ -1,7 +1,7 @@
 defmodule Chess.Game do
   use GenServer
 
-  alias Chess.{Board, Game, Rules}
+  alias Chess.{Board, Game, Rules, Position, Piece}
 
   defstruct board: Board.starting_position(),
             moves: [],
@@ -46,6 +46,8 @@ defmodule Chess.Game do
   def handle_call({:move, user, from, to}, _from, state_data) do
     with {:ok, color} <- color(state_data, user),
          {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
+         {:ok, from_position} <- Position.new(from),
+         {:ok} <- moving_own_piece(color, state_data.board, from_position),
          {:ok, move} <- Board.move(state_data.board, from, to) do
       state_data
       |> update_game_with_move(move)
@@ -86,5 +88,12 @@ defmodule Chess.Game do
 
   defp color(_, _) do
     {:error, "Unable to make a move if you're not playing the game."}
+  end
+
+  defp moving_own_piece(turn_color, board, from_position) do
+    case Board.piece(board, from_position) do
+      %Piece{color: ^turn_color} -> {:ok}
+      _ -> {:error, "Unable to move opponent's piece."}
+    end
   end
 end
