@@ -233,6 +233,19 @@ defmodule Chess.BoardTest do
     assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6 a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
   end
 
+  test "occupied_positions" do
+    board = %Board{
+      d4: Piece.white_queen(),
+      f6: Piece.black_rook(),
+      f2: Piece.black_pawn(),
+      c3: Piece.black_pawn(),
+      b6: Piece.white_bishop()
+    }
+
+    assert Board.occupied_positions(board, :white) == MapSet.new(~w[b6 d4]a)
+    assert Board.occupied_positions(board, :black) == MapSet.new(~w[f6 f2 c3]a)
+  end
+
   defp assert_positions(board, from_position_name, expected_position_names) do
     expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
     from_position = Position.for(from_position_name)

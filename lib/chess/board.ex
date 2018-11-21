@@ -59,6 +59,13 @@ defmodule Chess.Board do
     end
   end
 
+  def occupied_positions(board, color) do
+    for {key, %Chess.Piece{color: ^color}} <- Map.from_struct(board) do
+      key
+    end
+    |> MapSet.new()
+  end
+
   defp do_move(board, from, to) do
     from_piece = piece(board, from)
     after_board = %{board | Position.name(to) => from_piece, Position.name(from) => nil}
