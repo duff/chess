@@ -312,6 +312,16 @@ defmodule Chess.BoardTest do
     assert [%Move{to: %Chess.Position{file: :b, rank: 6}}, %Move{to: %Chess.Position{file: :c, rank: 7}}] = moves
   end
 
+  test "in_check" do
+    board = %Board{
+      d4: Piece.white_queen(),
+      d7: Piece.black_king()
+    }
+
+    assert Board.in_check?(board, :black)
+    refute Board.in_check?(board, :white)
+  end
+
   defp assert_positions(board, from_position_name, expected_position_names) do
     expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
     from_position = Position.for(from_position_name)

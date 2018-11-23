@@ -54,6 +54,22 @@ defmodule Chess.Board do
     |> MapSet.new()
   end
 
+  def in_check?(board, color) do
+    board
+    |> occupied_positions(opposite(color))
+    |> Enum.any?(fn position_name ->
+      {:ok, position} = Position.new(position_name)
+
+      possible_moves(board, position)
+      |> Enum.any?(fn move ->
+        case move.captured do
+          %Chess.Piece{color: ^color, role: :king} -> true
+          _ -> false
+        end
+      end)
+    end)
+  end
+
   def move(board, from_position_name, to_position_name) do
     with {:ok, from} <- Position.new(from_position_name),
          {:ok, to} <- Position.new(to_position_name),
