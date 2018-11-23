@@ -1,7 +1,7 @@
 defmodule Chess.BoardTest do
   use ExUnit.Case
 
-  alias Chess.{Board, Piece, Position}
+  alias Chess.{Board, Piece, Position, Move}
 
   test "starting_position" do
     board = Board.starting_position()
@@ -233,6 +233,65 @@ defmodule Chess.BoardTest do
     assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6 a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
   end
 
+  test "king positions when blocked by own color" do
+    board = %Board{
+      f6: Piece.black_king(),
+      f7: Piece.black_queen(),
+      f5: Piece.black_bishop(),
+      g7: Piece.black_bishop()
+    }
+
+    assert_positions(board, :f6, ~w[g6 g5 e5 e6 e7]a)
+  end
+
+  test "king positions when blocked by opponent color" do
+    board = %Board{
+      h8: Piece.black_king(),
+      h7: Piece.white_queen(),
+      g8: Piece.white_bishop()
+    }
+
+    assert_positions(board, :h8, ~w[g7 g8 h7]a)
+  end
+
+  test "pawn positions when blocked by own color vertically" do
+    board = %Board{
+      d2: Piece.white_pawn(),
+      d4: Piece.white_queen()
+    }
+
+    assert_positions(board, :d2, ~w[d3]a)
+  end
+
+  test "pawn positions when blocked by opponent color vertically" do
+    board = %Board{
+      d2: Piece.white_pawn(),
+      d4: Piece.black_queen()
+    }
+
+    assert_positions(board, :d2, ~w[d3]a)
+  end
+
+  test "knight positions when blocked by own color" do
+    board = %Board{
+      b1: Piece.white_knight(),
+      a3: Piece.white_queen(),
+      c3: Piece.white_bishop()
+    }
+
+    assert_positions(board, :b1, ~w[d2]a)
+  end
+
+  test "knight positions when blocked by opponent color" do
+    board = %Board{
+      b1: Piece.white_knight(),
+      a3: Piece.black_queen(),
+      c3: Piece.black_bishop()
+    }
+
+    assert_positions(board, :b1, ~w[d2 a3 c3]a)
+  end
+
   test "occupied_positions" do
     board = %Board{
       d4: Piece.white_queen(),
@@ -244,6 +303,13 @@ defmodule Chess.BoardTest do
 
     assert Board.occupied_positions(board, :white) == MapSet.new(~w[b6 d4]a)
     assert Board.occupied_positions(board, :black) == MapSet.new(~w[f6 f2 c3]a)
+  end
+
+  test "possible_moves" do
+    board = %Board{a8: Piece.white_knight()}
+    moves = Board.possible_moves(board, Position.for(:a8))
+
+    assert [%Move{to: %Chess.Position{file: :b, rank: 6}}, %Move{to: %Chess.Position{file: :c, rank: 7}}] = moves
   end
 
   defp assert_positions(board, from_position_name, expected_position_names) do

@@ -47,18 +47,6 @@ defmodule Chess.Board do
     Map.fetch!(board, Position.name(position))
   end
 
-  def move(board, from_position_name, to_position_name) do
-    with {:ok, from} <- Position.new(from_position_name),
-         {:ok, to} <- Position.new(to_position_name),
-         {:ok, possible_positions} <- possible_positions(board, from) do
-      if MapSet.member?(possible_positions, to) do
-        do_move(board, from, to)
-      else
-        {:error, "That is not a legal move."}
-      end
-    end
-  end
-
   def occupied_positions(board, color) do
     for {key, %Chess.Piece{color: ^color}} <- Map.from_struct(board) do
       key
@@ -66,12 +54,23 @@ defmodule Chess.Board do
     |> MapSet.new()
   end
 
-  defp do_move(board, from, to) do
-    from_piece = piece(board, from)
-    after_board = %{board | Position.name(to) => from_piece, Position.name(from) => nil}
+  def move(board, from_position_name, to_position_name) do
+    with {:ok, from} <- Position.new(from_position_name),
+         {:ok, to} <- Position.new(to_position_name),
+         {:ok, possible_positions} <- possible_positions(board, from) do
+      if MapSet.member?(possible_positions, to) do
+        {:ok, Move.new(board, from, to)}
+      else
+        {:error, "That is not a legal move."}
+      end
+    end
+  end
 
-    move = %Move{from: from, to: to, before_board: board, after_board: after_board, piece: from_piece, captured: piece(board, to)}
-    {:ok, move}
+  def possible_moves(board, from = %Position{}) do
+    {:ok, positions} = possible_positions(board, from)
+
+    positions
+    |> Enum.map(&Move.new(board, from, &1))
   end
 
   def possible_positions(board, from = %Position{}) do
@@ -92,28 +91,32 @@ defmodule Chess.Board do
     {:ok, result}
   end
 
-  defp positions(_board, %Piece{role: :king}, position) do
+  defp positions(board, %Piece{role: :king, color: color}, position) do
     result =
       [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, -1], [-1, 1]]
       |> relative_positions(position)
+      |> remove_occupied_by(board, color)
       |> MapSet.new()
 
     {:ok, result}
   end
 
-  defp positions(_board, %Piece{role: :knight}, position) do
+  defp positions(board, %Piece{role: :knight, color: color}, position) do
     result =
       [[-2, 1], [-2, -1], [2, 1], [2, -1], [-1, 2], [-1, -2], [1, 2], [1, -2]]
       |> relative_positions(position)
+      |> remove_occupied_by(board, color)
       |> MapSet.new()
 
     {:ok, result}
   end
 
-  defp positions(board, piece = %Piece{role: :pawn}, position) do
+  defp positions(board, piece = %Piece{role: :pawn, color: color}, position) do
     result =
       forward_positions(piece, position)
       |> relative_positions(position)
+      |> remove_occupied_by(board, color)
+      |> remove_occupied_by(board, opposite(color))
       |> MapSet.new()
       |> MapSet.union(pawn_capture_positions(board, piece, position))
 
@@ -239,6 +242,19 @@ defmodule Chess.Board do
   defp relative_position(position, file_delta, rank_delta) do
     Position.new(@reverse_file_index[@file_index[position.file] + file_delta], position.rank + rank_delta)
   end
+
+  defp remove_occupied_by(positions, board, color) do
+    positions
+    |> Enum.filter(fn position ->
+      case Board.piece(board, position) do
+        %Piece{color: ^color} -> false
+        _ -> true
+      end
+    end)
+  end
+
+  defp opposite(:black), do: :white
+  defp opposite(:white), do: :black
 end
 
 defimpl Inspect, for: Chess.Board do
