@@ -301,8 +301,8 @@ defmodule Chess.BoardTest do
       b6: Piece.white_bishop()
     }
 
-    assert Board.occupied_positions(board, :white) == MapSet.new(~w[b6 d4]a)
-    assert Board.occupied_positions(board, :black) == MapSet.new(~w[f6 f2 c3]a)
+    assert Board.occupied_positions(board, :white) == position_set(~w[b6 d4]a)
+    assert Board.occupied_positions(board, :black) == position_set(~w[f6 f2 c3]a)
   end
 
   test "possible_moves" do
@@ -323,8 +323,13 @@ defmodule Chess.BoardTest do
   end
 
   defp assert_positions(board, from_position_name, expected_position_names) do
-    expected_positions = expected_position_names |> Enum.map(&Position.for(&1)) |> MapSet.new()
     from_position = Position.for(from_position_name)
-    assert Board.possible_positions(board, from_position) == {:ok, expected_positions}
+    assert Board.possible_positions(board, from_position) == {:ok, position_set(expected_position_names)}
+  end
+
+  defp position_set(position_names) do
+    position_names
+    |> Enum.map(&Position.for(&1))
+    |> MapSet.new()
   end
 end

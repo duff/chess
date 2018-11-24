@@ -49,7 +49,7 @@ defmodule Chess.Board do
 
   def occupied_positions(board, color) do
     for {key, %Chess.Piece{color: ^color}} <- Map.from_struct(board) do
-      key
+      Position.for(key)
     end
     |> MapSet.new()
   end
@@ -57,9 +57,7 @@ defmodule Chess.Board do
   def in_check?(board, color) do
     board
     |> occupied_positions(opposite(color))
-    |> Enum.any?(fn position_name ->
-      {:ok, position} = Position.new(position_name)
-
+    |> Enum.any?(fn position ->
       possible_moves(board, position)
       |> Enum.any?(fn move ->
         case move.captured do
