@@ -57,7 +57,15 @@ defmodule Chess.Board do
   def in_check?(board, color) do
     board
     |> occupied_positions(opposite(color))
-    |> any_positions_cause_check?(board, color)
+    |> any_position_causes_check?(board, color)
+  end
+
+  def checkmate?(board, color) do
+    in_check?(board, color)
+
+    board
+    |> occupied_positions(color)
+    |> all_positions_cause_check?(board, color)
   end
 
   def move(board, from_position_name, to_position_name) do
@@ -249,7 +257,14 @@ defmodule Chess.Board do
     Position.new(@reverse_file_index[@file_index[position.file] + file_delta], position.rank + rank_delta)
   end
 
-  defp any_positions_cause_check?(positions, board, color) do
+  defp all_positions_cause_check?(positions, board, color) do
+    Enum.all?(positions, fn position ->
+      possible_moves(board, position)
+      |> all_moves_cause_check?(color)
+    end)
+  end
+
+  defp any_position_causes_check?(positions, board, color) do
     Enum.any?(positions, fn position ->
       possible_moves(board, position)
       |> any_move_causes_check?(color)
@@ -262,6 +277,12 @@ defmodule Chess.Board do
         %Chess.Piece{color: ^color, role: :king} -> true
         _ -> false
       end
+    end)
+  end
+
+  defp all_moves_cause_check?(moves, color) do
+    Enum.all?(moves, fn move ->
+      in_check?(move.after_board, color)
     end)
   end
 

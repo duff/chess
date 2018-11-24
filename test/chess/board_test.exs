@@ -312,7 +312,7 @@ defmodule Chess.BoardTest do
     assert [%Move{to: %Chess.Position{file: :b, rank: 6}}, %Move{to: %Chess.Position{file: :c, rank: 7}}] = moves
   end
 
-  test "in_check" do
+  test "in_check?" do
     board = %Board{
       d4: Piece.white_queen(),
       d7: Piece.black_king()
@@ -320,6 +320,29 @@ defmodule Chess.BoardTest do
 
     assert Board.in_check?(board, :black)
     refute Board.in_check?(board, :white)
+  end
+
+  describe "checkmate?" do
+    test "can't move out of check" do
+      board = %Board{
+        a8: Piece.black_king(),
+        a4: Piece.white_queen(),
+        b4: Piece.white_rook()
+      }
+
+      assert Board.checkmate?(board, :black)
+    end
+
+    test "can block the check" do
+      board = %Board{
+        a8: Piece.black_king(),
+        a4: Piece.white_queen(),
+        b4: Piece.white_rook(),
+        d7: Piece.black_rook()
+      }
+
+      refute Board.checkmate?(board, :black)
+    end
   end
 
   defp assert_positions(board, from_position_name, expected_position_names) do
