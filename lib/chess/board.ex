@@ -57,15 +57,7 @@ defmodule Chess.Board do
   def in_check?(board, color) do
     board
     |> occupied_positions(opposite(color))
-    |> Enum.any?(fn position ->
-      possible_moves(board, position)
-      |> Enum.any?(fn move ->
-        case move.captured do
-          %Chess.Piece{color: ^color, role: :king} -> true
-          _ -> false
-        end
-      end)
-    end)
+    |> any_positions_cause_check?(board, color)
   end
 
   def move(board, from_position_name, to_position_name) do
@@ -255,6 +247,22 @@ defmodule Chess.Board do
 
   defp relative_position(position, file_delta, rank_delta) do
     Position.new(@reverse_file_index[@file_index[position.file] + file_delta], position.rank + rank_delta)
+  end
+
+  defp any_positions_cause_check?(positions, board, color) do
+    Enum.any?(positions, fn position ->
+      possible_moves(board, position)
+      |> any_move_causes_check?(color)
+    end)
+  end
+
+  defp any_move_causes_check?(moves, color) do
+    Enum.any?(moves, fn move ->
+      case move.captured do
+        %Chess.Piece{color: ^color, role: :king} -> true
+        _ -> false
+      end
+    end)
   end
 
   defp remove_occupied_by(positions, board, color) do
