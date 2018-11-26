@@ -367,26 +367,26 @@ defmodule Chess.BoardTest do
       assert {:ok, {:in_check, :black}} == Board.status(board, :black)
     end
 
-    test "{:stalemate, :black}" do
+    test "{:stalemate, :white}" do
       board = %Board{
         a8: Piece.white_king(),
         e7: Piece.black_queen(),
         b4: Piece.black_rook()
       }
 
-      assert {:ok, {:stalemate, :black}} == Board.status(board, :black)
-      assert {:ok, {:in_progress}} == Board.status(board, :white)
+      assert {:ok, {:stalemate, :white}} == Board.status(board, :white)
+      assert {:ok, {:in_progress}} == Board.status(board, :black)
     end
 
-    test "{:stalemate, :white}" do
+    test "{:stalemate, :black}" do
       board = %Board{
         a8: Piece.black_king(),
         e7: Piece.white_queen(),
         b4: Piece.white_rook()
       }
 
-      assert {:ok, {:stalemate, :white}} == Board.status(board, :white)
-      assert {:ok, {:in_progress}} == Board.status(board, :black)
+      assert {:ok, {:stalemate, :black}} == Board.status(board, :black)
+      assert {:ok, {:in_progress}} == Board.status(board, :white)
     end
   end
 
