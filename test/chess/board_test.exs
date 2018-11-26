@@ -312,25 +312,48 @@ defmodule Chess.BoardTest do
     assert [%Move{to: %Chess.Position{file: :b, rank: 6}}, %Move{to: %Chess.Position{file: :c, rank: 7}}] = moves
   end
 
-  test "in_check?" do
-    board = %Board{
-      d4: Piece.white_queen(),
-      d7: Piece.black_king()
-    }
+  describe "status" do
+    test "{:in_progress}" do
+      assert {:ok, {:in_progress}} == Board.status(Board.starting_position(), :white)
+      assert {:ok, {:in_progress}} == Board.status(Board.starting_position(), :black)
+    end
 
-    assert Board.in_check?(board, :black)
-    refute Board.in_check?(board, :white)
-  end
+    test "{:in_check, :black}" do
+      board = %Board{
+        d4: Piece.white_queen(),
+        d7: Piece.black_king()
+      }
 
-  describe "checkmate?" do
-    test "can't move out of check" do
+      assert {:ok, {:in_check, :black}} == Board.status(board, :black)
+    end
+
+    test "{:in_check, :white}" do
+      board = %Board{
+        d4: Piece.black_queen(),
+        d7: Piece.white_king()
+      }
+
+      assert {:ok, {:in_check, :white}} == Board.status(board, :white)
+    end
+
+    test "{:in_checkmate, :black}" do
       board = %Board{
         a8: Piece.black_king(),
         a4: Piece.white_queen(),
         b4: Piece.white_rook()
       }
 
-      assert Board.checkmate?(board, :black)
+      assert {:ok, {:in_checkmate, :black}} == Board.status(board, :black)
+    end
+
+    test "{:in_checkmate, :white}" do
+      board = %Board{
+        a8: Piece.white_king(),
+        a4: Piece.black_queen(),
+        b4: Piece.black_rook()
+      }
+
+      assert {:ok, {:in_checkmate, :white}} == Board.status(board, :white)
     end
 
     test "can block the check" do
@@ -341,7 +364,7 @@ defmodule Chess.BoardTest do
         d7: Piece.black_rook()
       }
 
-      refute Board.checkmate?(board, :black)
+      assert {:ok, {:in_check, :black}} == Board.status(board, :black)
     end
   end
 

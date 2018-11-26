@@ -8,6 +8,7 @@ defmodule Chess.Game do
             black: nil,
             white: nil,
             rules: Rules.new(),
+            status: nil,
             id: nil
 
   def start_link() do

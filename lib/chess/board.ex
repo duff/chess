@@ -54,20 +54,6 @@ defmodule Chess.Board do
     |> MapSet.new()
   end
 
-  def in_check?(board, color) do
-    board
-    |> occupied_positions(opposite(color))
-    |> any_position_causes_check?(board, color)
-  end
-
-  def checkmate?(board, color) do
-    in_check?(board, color)
-
-    board
-    |> occupied_positions(color)
-    |> all_positions_cause_check?(board, color)
-  end
-
   def move(board, from_position_name, to_position_name) do
     with {:ok, from} <- Position.new(from_position_name),
          {:ok, to} <- Position.new(to_position_name),
@@ -78,6 +64,30 @@ defmodule Chess.Board do
         {:error, "That is not a legal move."}
       end
     end
+  end
+
+  def status(board, color) do
+    if in_check?(board, color) do
+      if all_occupied_positions_cause_check?(board, color) do
+        {:ok, {:in_checkmate, color}}
+      else
+        {:ok, {:in_check, color}}
+      end
+    else
+      {:ok, {:in_progress}}
+    end
+  end
+
+  defp in_check?(board, color) do
+    board
+    |> occupied_positions(opposite(color))
+    |> any_position_causes_check?(board, color)
+  end
+
+  defp all_occupied_positions_cause_check?(board, color) do
+    board
+    |> occupied_positions(color)
+    |> all_positions_cause_check?(board, color)
   end
 
   def possible_moves(board, from = %Position{}) do
