@@ -94,4 +94,12 @@ defmodule Chess.RulesTest do
     assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:in_checkmate, :black}})
     assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:stalemate, :black}})
   end
+
+  test "nothing is allowed once the game is over" do
+    rules = %Rules{state: :game_over}
+    assert {:error, _} = Rules.check(rules, {:move, :white})
+    assert {:error, _} = Rules.check(rules, {:move, :black})
+    assert {:error, _} = Rules.check(rules, {:add_player, :white})
+    assert {:error, _} = Rules.check(rules, {:add_player, :black})
+  end
 end
