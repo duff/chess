@@ -49,6 +49,8 @@ defmodule Chess.Game do
          {:ok, from_position} <- Position.new(from),
          {:ok} <- moving_own_piece(color, state_data.board, from_position),
          {:ok, move} <- Board.move(state_data.board, from, to) do
+      # {:ok, status} <- Board.status(move.after_board, color),
+      # {:ok, rules} <- Rules.check(rules, {endgame_check, status} do
       state_data
       |> update_game_with_move(move)
       |> update_rules(rules)

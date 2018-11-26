@@ -77,15 +77,21 @@ defmodule Chess.RulesTest do
     assert {:error, _} = Rules.check(rules, {:move, :black})
   end
 
-  test "win check during white's turn" do
+  test "endgame_check during white's turn" do
     rules = %Rules{state: :white_turn}
-    assert {:ok, rules} = Rules.check(rules, {:win_check, :no_win})
-    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:win_check, :win})
+
+    assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, :white_in_check})
+    assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, :in_progress})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, :black_won})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, :stalemate})
   end
 
-  test "win check during black's turn" do
+  test "endgame_check during black's turn" do
     rules = %Rules{state: :black_turn}
-    assert {:ok, rules} = Rules.check(rules, {:win_check, :no_win})
-    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:win_check, :win})
+
+    assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, :black_in_check})
+    assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, :in_progress})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, :white_won})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, :stalemate})
   end
 end
