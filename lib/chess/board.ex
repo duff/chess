@@ -74,7 +74,11 @@ defmodule Chess.Board do
         {:ok, {:in_check, color}}
       end
     else
-      {:ok, {:in_progress}}
+      if all_occupied_positions_cause_check?(board, opposite(color)) do
+        {:ok, {:stalemate, color}}
+      else
+        {:ok, {:in_progress}}
+      end
     end
   end
 

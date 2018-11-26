@@ -83,7 +83,7 @@ defmodule Chess.RulesTest do
     assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, {:in_check, :white}})
     assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, {:in_progress}})
     assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:in_checkmate, :white}})
-    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:stalemate}})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:stalemate, :white}})
   end
 
   test "endgame_check during black's turn" do
@@ -92,6 +92,6 @@ defmodule Chess.RulesTest do
     assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, {:in_check, :black}})
     assert {:ok, ^rules} = Rules.check(rules, {:endgame_check, {:in_progress}})
     assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:in_checkmate, :black}})
-    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:stalemate}})
+    assert {:ok, %Rules{state: :game_over}} = Rules.check(rules, {:endgame_check, {:stalemate, :black}})
   end
 end

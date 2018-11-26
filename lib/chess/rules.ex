@@ -40,7 +40,7 @@ defmodule Chess.Rules do
       {:in_check, _} -> {:ok, rules}
       {:in_progress} -> {:ok, rules}
       {:in_checkmate, _} -> {:ok, %Rules{rules | state: :game_over}}
-      {:stalemate} -> {:ok, %Rules{rules | state: :game_over}}
+      {:stalemate, _} -> {:ok, %Rules{rules | state: :game_over}}
     end
   end
 
