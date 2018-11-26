@@ -10,7 +10,7 @@ defmodule Chess.Board do
     a1 b1 c1 d1 e1 f1 g1 h1
   ]a
 
-  alias Chess.{Piece, Board, Position, Move}
+  alias Chess.{Piece, Board, Position, Move, Color}
 
   @file_index Enum.with_index(Position.files(), 1) |> Map.new()
   @reverse_file_index Enum.zip(Position.ranks(), Position.files()) |> Map.new()
@@ -84,7 +84,7 @@ defmodule Chess.Board do
 
   defp in_check?(board, color) do
     board
-    |> occupied_positions(opposite(color))
+    |> occupied_positions(Color.opposite(color))
     |> any_position_causes_check?(board, color)
   end
 
@@ -144,7 +144,7 @@ defmodule Chess.Board do
       forward_positions(piece, position)
       |> relative_positions(position)
       |> remove_occupied_by(board, color)
-      |> remove_occupied_by(board, opposite(color))
+      |> remove_occupied_by(board, Color.opposite(color))
       |> MapSet.new()
       |> MapSet.union(pawn_capture_positions(board, piece, position))
 
@@ -309,9 +309,6 @@ defmodule Chess.Board do
       end
     end)
   end
-
-  defp opposite(:black), do: :white
-  defp opposite(:white), do: :black
 end
 
 defimpl Inspect, for: Chess.Board do

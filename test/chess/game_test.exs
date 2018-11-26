@@ -104,6 +104,30 @@ defmodule Chess.GameTest do
     assert {:error, "Unable to take that action."} == Game.move(game, user_1, :e2, :e4)
   end
 
+  describe "move causes status change" do
+    setup :game_ready_to_move
+
+    test "move puts opponent in check", %{game: game, user_1: user_1, user_2: user_2} do
+      :ok = Game.move(game, user_1, :e2, :e4)
+      :ok = Game.move(game, user_2, :f7, :f5)
+      :ok = Game.move(game, user_1, :d1, :h5)
+      assert {:in_check, :black} == state(game).status
+      assert %Rules{state: :black_turn} = state(game).rules
+    end
+
+    test "move puts opponent in checkmate", %{game: game, user_1: user_1, user_2: user_2} do
+      :ok = Game.move(game, user_1, :e2, :e4)
+      :ok = Game.move(game, user_2, :h7, :h6)
+      :ok = Game.move(game, user_1, :f1, :c4)
+      :ok = Game.move(game, user_2, :a7, :a6)
+      :ok = Game.move(game, user_1, :d1, :f3)
+      :ok = Game.move(game, user_2, :a6, :a5)
+      :ok = Game.move(game, user_1, :f3, :f7)
+      assert {:in_checkmate, :black} == state(game).status
+      assert %Rules{state: :game_over} = state(game).rules
+    end
+  end
+
   defp state(game) do
     :sys.get_state(game)
   end

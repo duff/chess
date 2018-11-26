@@ -1,7 +1,7 @@
 defmodule Chess.Game do
   use GenServer
 
-  alias Chess.{Board, Game, Rules, Position, Piece}
+  alias Chess.{Board, Game, Rules, Position, Piece, Color}
 
   defstruct board: Board.starting_position(),
             moves: [],
@@ -50,8 +50,8 @@ defmodule Chess.Game do
          {:ok, from_position} <- Position.new(from),
          {:ok} <- moving_own_piece(color, state_data.board, from_position),
          {:ok, move} <- Board.move(state_data.board, from, to),
-         {:ok, status} <- Board.status(move.after_board, color) do
-      # {:ok, rules} <- Rules.check(rules, {endgame_check, status} do
+         {:ok, status} <- Board.status(move.after_board, Color.opposite(color)),
+         {:ok, rules} <- Rules.check(rules, {:endgame_check, status}) do
       state_data
       |> update_game(move, status)
       |> update_rules(rules)
@@ -96,6 +96,7 @@ defmodule Chess.Game do
   defp moving_own_piece(turn_color, board, from_position) do
     case Board.piece(board, from_position) do
       %Piece{color: ^turn_color} -> {:ok}
+      nil -> {:error, "There is no piece at that position."}
       _ -> {:error, "Unable to move opponent's piece."}
     end
   end
