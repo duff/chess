@@ -49,11 +49,11 @@ defmodule Chess.Game do
          {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
          {:ok, from_position} <- Position.new(from),
          {:ok} <- moving_own_piece(color, state_data.board, from_position),
-         {:ok, move} <- Board.move(state_data.board, from, to) do
-      # {:ok, status} <- Board.status(move.after_board, color),
+         {:ok, move} <- Board.move(state_data.board, from, to),
+         {:ok, status} <- Board.status(move.after_board, color) do
       # {:ok, rules} <- Rules.check(rules, {endgame_check, status} do
       state_data
-      |> update_game_with_move(move)
+      |> update_game(move, status)
       |> update_rules(rules)
       |> reply_success(:ok)
     else
@@ -63,8 +63,8 @@ defmodule Chess.Game do
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
-  defp update_game_with_move(state_data, move) do
-    %{state_data | board: move.after_board, moves: [move | state_data.moves]}
+  defp update_game(state_data, move, status) do
+    %{state_data | board: move.after_board, status: status, moves: [move | state_data.moves]}
   end
 
   defp reply_success(state_data, reply), do: {:reply, reply, state_data}

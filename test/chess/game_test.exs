@@ -57,6 +57,7 @@ defmodule Chess.GameTest do
       assert :ok == Game.move(game, user_1, :e2, :e4)
 
       assert %Rules{state: :black_turn} = state(game).rules
+      assert {:in_progress} == state(game).status
       assert Board.piece(state(game).board, Position.e4()) == Piece.white_pawn()
       assert Board.piece(state(game).board, Position.e2()) == nil
       assert [%Move{from: %Position{file: :e, rank: 2}, to: %Position{file: :e, rank: 4}}] = state(game).moves
@@ -67,18 +68,11 @@ defmodule Chess.GameTest do
       assert :ok == Game.move(game, user_2, :b7, :b6)
 
       assert %Rules{state: :white_turn} = state(game).rules
+      assert {:in_progress} == state(game).status
       assert Board.piece(state(game).board, Position.b6()) == Piece.black_pawn()
       assert Board.piece(state(game).board, Position.b7()) == nil
       assert [%Move{from: %Position{file: :b, rank: 7}, to: %Position{file: :b, rank: 6}} | _] = state(game).moves
     end
-  end
-
-  test "move fails if the rules aren't followed" do
-    {:ok, game} = Game.start_link()
-
-    user_1 = User.new()
-    assert :ok == Game.add_player(game, user_1, :white)
-    assert {:error, "Unable to take that action."} == Game.move(game, user_1, :e2, :e4)
   end
 
   describe "move fails" do
@@ -100,6 +94,14 @@ defmodule Chess.GameTest do
       assert {:error, "Invalid position."} == Game.move(game, user_1, :e9, :e4)
       assert {:error, "Invalid position."} == Game.move(game, user_1, :e2, :z9)
     end
+  end
+
+  test "move fails if the rules aren't followed" do
+    {:ok, game} = Game.start_link()
+
+    user_1 = User.new()
+    assert :ok == Game.add_player(game, user_1, :white)
+    assert {:error, "Unable to take that action."} == Game.move(game, user_1, :e2, :e4)
   end
 
   defp state(game) do
