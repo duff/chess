@@ -64,92 +64,92 @@ defmodule Chess.BoardTest do
   describe "basic positions" do
     test "rook" do
       board = %Board{d4: Piece.white_rook()}
-      assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4]a)
+      assert_moves(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4]a)
 
       board = %Board{a1: Piece.white_rook()}
-      assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1]a)
+      assert_moves(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1]a)
     end
 
     test "bishop" do
       board = %Board{d4: Piece.white_bishop()}
-      assert_positions(board, :d4, ~w[a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
+      assert_moves(board, :d4, ~w[a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
 
       board = %Board{a1: Piece.white_bishop()}
-      assert_positions(board, :a1, ~w[b2 c3 d4 e5 f6 g7 h8]a)
+      assert_moves(board, :a1, ~w[b2 c3 d4 e5 f6 g7 h8]a)
     end
 
     test "king" do
       board = %Board{d4: Piece.white_king()}
-      assert_positions(board, :d4, ~w[e4 c4 d5 d3 e5 e3 c3 c5]a)
+      assert_moves(board, :d4, ~w[e4 c4 d5 d3 e5 e3 c3 c5]a)
 
       board = %Board{a1: Piece.white_king()}
-      assert_positions(board, :a1, ~w[b1 a2 b2]a)
+      assert_moves(board, :a1, ~w[b1 a2 b2]a)
     end
 
     test "queen" do
       board = %Board{d4: Piece.white_queen()}
-      assert_positions(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4 a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
+      assert_moves(board, :d4, ~w[d1 d2 d3 d5 d6 d7 d8 a4 b4 c4 e4 f4 g4 h4 a1 a7 b2 b6 c3 c5 e5 e3 f6 f2 g7 g1 h8]a)
 
       board = %Board{a1: Piece.white_queen()}
-      assert_positions(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1 b2 c3 d4 e5 f6 g7 h8]a)
+      assert_moves(board, :a1, ~w[a2 a3 a4 a5 a6 a7 a8 b1 c1 d1 e1 f1 g1 h1 b2 c3 d4 e5 f6 g7 h8]a)
     end
 
     test "knight" do
       board = %Board{d4: Piece.white_knight()}
-      assert_positions(board, :d4, ~w[b5 b3 f5 f3 c6 c2 e6 e2]a)
+      assert_moves(board, :d4, ~w[b5 b3 f5 f3 c6 c2 e6 e2]a)
 
       board = %Board{a1: Piece.white_knight()}
-      assert_positions(board, :a1, ~w[c2 b3]a)
+      assert_moves(board, :a1, ~w[c2 b3]a)
     end
   end
 
   describe "white pawn positions" do
     test "from 2nd rank" do
       board = %Board{d2: Piece.white_pawn()}
-      assert_positions(board, :d2, ~w[d4 d3]a)
+      assert_moves(board, :d2, ~w[d4 d3]a)
     end
 
     test "from a rank greater than the 2nd rank" do
       board = %Board{d3: Piece.white_pawn()}
-      assert_positions(board, :d3, ~w[d4]a)
+      assert_moves(board, :d3, ~w[d4]a)
     end
 
     test "from the top rank" do
       board = %Board{d8: Piece.white_pawn()}
-      assert_positions(board, :d8, ~w[]a)
+      assert_moves(board, :d8, ~w[]a)
     end
 
     test "captures" do
       board = %Board{d3: Piece.white_pawn(), e4: Piece.black_bishop()}
-      assert_positions(board, :d3, ~w[d4 e4]a)
+      assert_moves(board, :d3, ~w[d4 e4]a)
 
       board = %Board{d2: Piece.white_pawn(), e3: Piece.black_bishop(), c3: Piece.black_queen()}
-      assert_positions(board, :d2, ~w[d3 d4 e3 c3]a)
+      assert_moves(board, :d2, ~w[d3 d4 e3 c3]a)
     end
   end
 
   describe "black pawn positions" do
     test "from 7th rank" do
       board = %Board{d7: Piece.black_pawn()}
-      assert_positions(board, :d7, ~w[d6 d5]a)
+      assert_moves(board, :d7, ~w[d6 d5]a)
     end
 
     test "from a rank less than the 7th rank" do
       board = %Board{d6: Piece.black_pawn()}
-      assert_positions(board, :d6, ~w[d5]a)
+      assert_moves(board, :d6, ~w[d5]a)
     end
 
     test "from the bottom rank" do
       board = %Board{d1: Piece.black_pawn()}
-      assert_positions(board, :d1, ~w[]a)
+      assert_moves(board, :d1, ~w[]a)
     end
 
     test "captures" do
       board = %Board{d6: Piece.black_pawn(), e5: Piece.white_rook()}
-      assert_positions(board, :d6, ~w[d5 e5]a)
+      assert_moves(board, :d6, ~w[d5 e5]a)
 
       board = %Board{d7: Piece.black_pawn(), e6: Piece.white_knight(), c6: Piece.white_bishop()}
-      assert_positions(board, :d7, ~w[d6 d5 e6 c6]a)
+      assert_moves(board, :d7, ~w[d6 d5 e6 c6]a)
     end
   end
 
@@ -162,7 +162,7 @@ defmodule Chess.BoardTest do
       b6: Piece.white_queen()
     }
 
-    assert_positions(board, :d4, ~w[c5 e5 e3]a)
+    assert_moves(board, :d4, ~w[c5 e5 e3]a)
   end
 
   test "bishop positions when blocked by opponent color" do
@@ -174,7 +174,7 @@ defmodule Chess.BoardTest do
       b6: Piece.black_queen()
     }
 
-    assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6]a)
+    assert_moves(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6]a)
   end
 
   test "rook positions when blocked by own color" do
@@ -186,7 +186,7 @@ defmodule Chess.BoardTest do
       d7: Piece.white_queen()
     }
 
-    assert_positions(board, :d4, ~w[d3 d5 d6 b4 c4 e4 f4]a)
+    assert_moves(board, :d4, ~w[d3 d5 d6 b4 c4 e4 f4]a)
   end
 
   test "rook positions when blocked by opponent color" do
@@ -198,7 +198,7 @@ defmodule Chess.BoardTest do
       d7: Piece.black_queen()
     }
 
-    assert_positions(board, :d4, ~w[a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
+    assert_moves(board, :d4, ~w[a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
   end
 
   test "queen positions when blocked by own color" do
@@ -214,7 +214,7 @@ defmodule Chess.BoardTest do
       b6: Piece.white_pawn()
     }
 
-    assert_positions(board, :d4, ~w[c5 e5 e3 d3 d5 d6 b4 c4 e4 f4]a)
+    assert_moves(board, :d4, ~w[c5 e5 e3 d3 d5 d6 b4 c4 e4 f4]a)
   end
 
   test "queen positions when blocked by opponent color" do
@@ -230,7 +230,7 @@ defmodule Chess.BoardTest do
       d7: Piece.black_queen()
     }
 
-    assert_positions(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6 a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
+    assert_moves(board, :d4, ~w[b6 c3 c5 e5 e3 f2 f6 a4 d2 d3 d5 d6 d7 b4 c4 e4 f4 g4]a)
   end
 
   test "king positions when blocked by own color" do
@@ -241,7 +241,7 @@ defmodule Chess.BoardTest do
       g7: Piece.black_bishop()
     }
 
-    assert_positions(board, :f6, ~w[g6 g5 e5 e6 e7]a)
+    assert_moves(board, :f6, ~w[g6 g5 e5 e6 e7]a)
   end
 
   test "king positions when blocked by opponent color" do
@@ -251,7 +251,7 @@ defmodule Chess.BoardTest do
       g8: Piece.white_bishop()
     }
 
-    assert_positions(board, :h8, ~w[g7 g8 h7]a)
+    assert_moves(board, :h8, ~w[g7 g8 h7]a)
   end
 
   test "pawn positions when blocked by own color vertically" do
@@ -260,7 +260,7 @@ defmodule Chess.BoardTest do
       d4: Piece.white_queen()
     }
 
-    assert_positions(board, :d2, ~w[d3]a)
+    assert_moves(board, :d2, ~w[d3]a)
   end
 
   test "pawn positions when blocked by opponent color vertically" do
@@ -269,7 +269,7 @@ defmodule Chess.BoardTest do
       d4: Piece.black_queen()
     }
 
-    assert_positions(board, :d2, ~w[d3]a)
+    assert_moves(board, :d2, ~w[d3]a)
   end
 
   test "knight positions when blocked by own color" do
@@ -279,7 +279,7 @@ defmodule Chess.BoardTest do
       c3: Piece.white_bishop()
     }
 
-    assert_positions(board, :b1, ~w[d2]a)
+    assert_moves(board, :b1, ~w[d2]a)
   end
 
   test "knight positions when blocked by opponent color" do
@@ -289,8 +289,12 @@ defmodule Chess.BoardTest do
       c3: Piece.black_bishop()
     }
 
-    assert_positions(board, :b1, ~w[d2 a3 c3]a)
+    assert_moves(board, :b1, ~w[d2 a3 c3]a)
   end
+
+  # test "positions should not allow you to move into check" do
+  #   flunk "Finish this"
+  # end
 
   test "occupied_positions" do
     board = %Board{
@@ -303,13 +307,6 @@ defmodule Chess.BoardTest do
 
     assert Board.occupied_positions(board, :white) == position_set(~w[b6 d4]a)
     assert Board.occupied_positions(board, :black) == position_set(~w[f6 f2 c3]a)
-  end
-
-  test "possible_moves" do
-    board = %Board{a8: Piece.white_knight()}
-    moves = Board.possible_moves(board, Position.for(:a8))
-
-    assert [%Move{to: %Chess.Position{file: :b, rank: 6}}, %Move{to: %Chess.Position{file: :c, rank: 7}}] = moves
   end
 
   describe "status" do
@@ -390,9 +387,16 @@ defmodule Chess.BoardTest do
     end
   end
 
-  defp assert_positions(board, from_position_name, expected_position_names) do
+  defp assert_moves(board, from_position_name, expected_position_names) do
     from_position = Position.for(from_position_name)
-    assert Board.possible_positions(board, from_position) == {:ok, position_set(expected_position_names)}
+    expected_moves = move_set(expected_position_names, board, from_position)
+    assert Board.possible_moves(board, from_position) == expected_moves
+  end
+
+  defp move_set(position_names, board, from_position) do
+    position_names
+    |> Enum.map(&Move.new(board, from_position, Position.for(&1)))
+    |> MapSet.new()
   end
 
   defp position_set(position_names) do
