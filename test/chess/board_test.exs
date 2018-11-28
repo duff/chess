@@ -247,8 +247,8 @@ defmodule Chess.BoardTest do
   test "king positions when blocked by opponent color" do
     board = %Board{
       h8: Piece.black_king(),
-      h7: Piece.white_queen(),
-      g8: Piece.white_bishop()
+      h7: Piece.white_knight(),
+      g8: Piece.white_knight()
     }
 
     assert_moves(board, :h8, ~w[g7 g8 h7]a)
@@ -292,9 +292,15 @@ defmodule Chess.BoardTest do
     assert_moves(board, :b1, ~w[d2 a3 c3]a)
   end
 
-  # test "positions should not allow you to move into check" do
-  #   flunk "Finish this"
-  # end
+  test "positions should not allow you to move into check" do
+    board = %Board{
+      b2: Piece.white_knight(),
+      a1: Piece.white_king(),
+      c3: Piece.black_bishop()
+    }
+
+    assert_moves(board, :b2, ~w[]a)
+  end
 
   test "occupied_positions" do
     board = %Board{
