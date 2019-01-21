@@ -3,6 +3,8 @@ defmodule Chess.Game do
 
   alias Chess.{Board, Game, Rules, Position, Piece, Color}
 
+  @derive {Inspect, except: ~w(moves)a}
+
   defstruct board: Board.starting_position(),
             moves: [],
             black: nil,
