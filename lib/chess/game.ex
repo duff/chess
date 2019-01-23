@@ -30,39 +30,6 @@ defmodule Chess.Game do
     {:via, Registry, {Registry.Game, id}}
   end
 
-  def init(game) do
-    {:ok, game}
-  end
-
-  def handle_call({:add_player, user, color}, _from, state_data) do
-    with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}),
-         {:ok} <- add_player_allowed?(state_data, user, color) do
-      state_data
-      |> Map.replace!(color, user)
-      |> update_rules(rules)
-      |> reply_success(:ok)
-    else
-      {:error, message} -> {:reply, {:error, message}, state_data}
-    end
-  end
-
-  def handle_call({:move, user, from, to}, _from, state_data) do
-    with {:ok, color} <- color(state_data, user),
-         {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
-         {:ok, from_position} <- Position.new(from),
-         {:ok} <- moving_own_piece(color, state_data.board, from_position),
-         {:ok, move} <- Board.move(state_data.board, from, to),
-         {:ok, status} <- Board.status(move.after_board, Color.opposite(color)),
-         {:ok, rules} <- Rules.check(rules, {:endgame_check, status}) do
-      state_data
-      |> update_game(move, status)
-      |> update_rules(rules)
-      |> reply_success(:ok)
-    else
-      {:error, message} -> {:reply, {:error, message}, state_data}
-    end
-  end
-
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
   defp update_game(state_data, move, status) do
@@ -100,6 +67,42 @@ defmodule Chess.Game do
       %Piece{color: ^turn_color} -> {:ok}
       nil -> {:error, "There is no piece at that position."}
       _ -> {:error, "Unable to move opponent's piece."}
+    end
+  end
+
+  @impl true
+  def init(game) do
+    {:ok, game}
+  end
+
+  @impl true
+  def handle_call({:add_player, user, color}, _from, state_data) do
+    with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}),
+         {:ok} <- add_player_allowed?(state_data, user, color) do
+      state_data
+      |> Map.replace!(color, user)
+      |> update_rules(rules)
+      |> reply_success(:ok)
+    else
+      {:error, message} -> {:reply, {:error, message}, state_data}
+    end
+  end
+
+  @impl true
+  def handle_call({:move, user, from, to}, _from, state_data) do
+    with {:ok, color} <- color(state_data, user),
+         {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
+         {:ok, from_position} <- Position.new(from),
+         {:ok} <- moving_own_piece(color, state_data.board, from_position),
+         {:ok, move} <- Board.move(state_data.board, from, to),
+         {:ok, status} <- Board.status(move.after_board, Color.opposite(color)),
+         {:ok, rules} <- Rules.check(rules, {:endgame_check, status}) do
+      state_data
+      |> update_game(move, status)
+      |> update_rules(rules)
+      |> reply_success(:ok)
+    else
+      {:error, message} -> {:reply, {:error, message}, state_data}
     end
   end
 end

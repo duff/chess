@@ -84,6 +84,15 @@ defmodule Chess.Board do
     end
   end
 
+  def possible_moves(board, from = %Position{}, should_prevent_check \\ true) do
+    from_piece = piece(board, from)
+
+    positions(board, from_piece, from)
+    |> Enum.map(&Move.new(board, from, &1))
+    |> reject_if_causes_check(from_piece, should_prevent_check)
+    |> MapSet.new()
+  end
+
   defp in_check?(board, color) do
     board
     |> occupied_positions(Color.opposite(color))
@@ -94,15 +103,6 @@ defmodule Chess.Board do
     board
     |> occupied_positions(color)
     |> all_positions_cause_check?(board, color)
-  end
-
-  def possible_moves(board, from = %Position{}, should_prevent_check \\ true) do
-    from_piece = piece(board, from)
-
-    positions(board, from_piece, from)
-    |> Enum.map(&Move.new(board, from, &1))
-    |> reject_if_causes_check(from_piece, should_prevent_check)
-    |> MapSet.new()
   end
 
   defp reject_if_causes_check(moves, _from_piece, false), do: moves
