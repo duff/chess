@@ -18,7 +18,7 @@ defmodule Chess.Game do
     GenServer.start_link(__MODULE__, game, name: via_tuple(game.id))
   end
 
-  def add_player(game, user, color) when color in ~w[white black]a do
+  def add_player(game, user, color) do
     GenServer.call(game, {:add_player, user, color})
   end
 
@@ -76,7 +76,7 @@ defmodule Chess.Game do
   end
 
   @impl true
-  def handle_call({:add_player, user, color}, _from, state_data) do
+  def handle_call({:add_player, user, color}, _from, state_data) when color in ~w[white black]a do
     with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}),
          {:ok} <- add_player_allowed?(state_data, user, color) do
       state_data

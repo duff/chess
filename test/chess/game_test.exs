@@ -3,50 +3,52 @@ defmodule Chess.GameTest do
 
   alias Chess.{Game, Board, Piece, Move, Position, User, Rules}
 
-  test "board starts out in the right position" do
-    {:ok, game} = Game.start_link()
-    assert state(game).board == Board.starting_position()
-  end
+  describe "start_link" do
+    test "board starts out in the right position" do
+      {:ok, game} = Game.start_link()
+      assert state(game).board == Board.starting_position()
+    end
 
-  test "start_link creates a new game with a unique id" do
-    {:ok, game1} = Game.start_link()
-    {:ok, game2} = Game.start_link()
-    assert state(game1).id != nil
-    assert state(game1).id != state(game2).id
+    test "creates a new game with a unique id" do
+      {:ok, game1} = Game.start_link()
+      {:ok, game2} = Game.start_link()
+      assert state(game1).id != nil
+      assert state(game1).id != state(game2).id
+    end
   end
 
   describe "add player" do
-    setup :game_initialized
-
-    test "sets the players and updates the rules", %{game: game} do
+    test "sets the players and updates the rules" do
       user_1 = User.new()
       user_2 = User.new()
 
-      assert :ok == Game.add_player(game, user_1, :black)
-      assert state(game).black == user_1
-      assert state(game).white == nil
+      {:ok, new_state} = handle_call({:add_player, user_1, :black}, %Game{})
+      assert new_state.black == user_1
+      assert new_state.white == nil
 
-      assert :ok == Game.add_player(game, user_2, :white)
-      assert state(game).black == user_1
-      assert state(game).white == user_2
-      assert %Rules{state: :players_set} = state(game).rules
+      {:ok, new_state} = handle_call({:add_player, user_2, :white}, new_state)
+      assert new_state.black == user_1
+      assert new_state.white == user_2
+      assert new_state.rules == %Rules{state: :players_set}
     end
 
-    test "fails if the rules aren't followed", %{game: game} do
-      assert :ok == Game.add_player(game, User.new(), :black)
-      assert {:error, "Unable to take that action."} == Game.add_player(game, User.new(), :black)
+    test "fails if the rules aren't followed" do
+      {:ok, new_state} = handle_call({:add_player, User.new(), :black}, %Game{})
+      {:error, "Unable to take that action."} = handle_call({:add_player, User.new(), :black}, new_state)
     end
 
-    test "fails if the we try to add the same player as both colors - black first", %{game: game} do
+    test "fails if the we try to add the same player as both colors - black first" do
       user = User.new()
-      assert :ok == Game.add_player(game, user, :black)
-      assert {:error, "The same player cannot play both sides of the board."} == Game.add_player(game, user, :white)
+
+      {:ok, state} = handle_call({:add_player, user, :black}, %Game{})
+      {:error, "The same player cannot play both sides of the board."} = handle_call({:add_player, user, :white}, state)
     end
 
-    test "fails if the we try to add the same player as both colors - white first", %{game: game} do
+    test "fails if the we try to add the same player as both colors - white first" do
       user = User.new()
-      assert :ok == Game.add_player(game, user, :white)
-      assert {:error, "The same player cannot play both sides of the board."} == Game.add_player(game, user, :black)
+
+      {:ok, state} = handle_call({:add_player, user, :white}, %Game{})
+      {:error, "The same player cannot play both sides of the board."} = handle_call({:add_player, user, :black}, state)
     end
   end
 
@@ -144,8 +146,10 @@ defmodule Chess.GameTest do
     [game: game, user_1: user_1, user_2: user_2]
   end
 
-  defp game_initialized(_context) do
-    {:ok, game} = Game.start_link()
-    [game: game]
+  defp handle_call(params, state) do
+    case Game.handle_call(params, nil, state) do
+      {:reply, :ok, new_state} -> {:ok, new_state}
+      {:reply, {:error, message}, _} -> {:error, message}
+    end
   end
 end
