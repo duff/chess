@@ -1,5 +1,5 @@
 defmodule Chess.GameTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Chess.{Game, Board, Piece, Move, Position, User, Rules}
 

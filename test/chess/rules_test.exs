@@ -1,5 +1,5 @@
 defmodule Chess.RulesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Chess.Rules
 

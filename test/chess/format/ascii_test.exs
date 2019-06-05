@@ -1,5 +1,5 @@
 defmodule Chess.Format.AsciiTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Chess.Board
   alias Chess.Format.Ascii
