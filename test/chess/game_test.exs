@@ -55,78 +55,79 @@ defmodule Chess.GameTest do
   describe "move succeeds" do
     setup :game_ready_to_move
 
-    test "for white", %{game: game, user_1: user_1} do
-      assert :ok == Game.move(game, user_1, :e2, :e4)
+    test "for white", %{state: state, user_1: user_1} do
+      {:ok, state} = handle_call({:move, user_1, :e2, :e4}, state)
 
-      assert %Rules{state: :black_turn} = state(game).rules
-      assert {:in_progress} == state(game).status
-      assert Board.piece(state(game).board, Position.e4()) == Piece.white_pawn()
-      assert Board.piece(state(game).board, Position.e2()) == nil
-      assert [%Move{from: %Position{file: :e, rank: 2}, to: %Position{file: :e, rank: 4}}] = state(game).moves
+      assert state.rules == %Rules{state: :black_turn}
+      assert state.status == {:in_progress}
+      assert Board.piece(state.board, Position.e4()) == Piece.white_pawn()
+      assert Board.piece(state.board, Position.e2()) == nil
+      assert [%Move{from: %Position{file: :e, rank: 2}, to: %Position{file: :e, rank: 4}}] = state.moves
     end
 
-    test "for black", %{game: game, user_1: user_1, user_2: user_2} do
-      assert :ok == Game.move(game, user_1, :e2, :e4)
-      assert :ok == Game.move(game, user_2, :b7, :b6)
+    test "for black", %{state: state, user_1: user_1, user_2: user_2} do
+      {:ok, state} = handle_call({:move, user_1, :e2, :e4}, state)
+      {:ok, state} = handle_call({:move, user_2, :b7, :b6}, state)
 
-      assert %Rules{state: :white_turn} = state(game).rules
-      assert {:in_progress} == state(game).status
-      assert Board.piece(state(game).board, Position.b6()) == Piece.black_pawn()
-      assert Board.piece(state(game).board, Position.b7()) == nil
-      assert [%Move{from: %Position{file: :b, rank: 7}, to: %Position{file: :b, rank: 6}} | _] = state(game).moves
+      assert state.rules == %Rules{state: :white_turn}
+      assert state.status == {:in_progress}
+      assert Board.piece(state.board, Position.b6()) == Piece.black_pawn()
+      assert Board.piece(state.board, Position.b7()) == nil
+      assert [%Move{from: %Position{file: :b, rank: 7}, to: %Position{file: :b, rank: 6}} | _] = state.moves
     end
   end
 
   describe "move fails" do
     setup :game_ready_to_move
 
-    test "if the user isn't playing the game", %{game: game} do
-      assert {:error, "Unable to make a move if you're not playing the game."} == Game.move(game, User.new(), :e2, :e4)
+    test "if the user isn't playing the game", %{state: state} do
+      assert {:error, "Unable to make a move if you're not playing the game."} ==
+               handle_call({:move, User.new(), :e2, :e4}, state)
     end
 
-    test "if the Board disallows it", %{game: game, user_1: user_1} do
-      assert {:error, "That is not a legal move."} == Game.move(game, user_1, :e2, :e8)
+    test "if the Board disallows it", %{state: state, user_1: user_1} do
+      assert {:error, "That is not a legal move."} == handle_call({:move, user_1, :e2, :e8}, state)
     end
 
-    test "if attempting to move your opponent's piece", %{game: game, user_1: user_1} do
-      assert {:error, "Unable to move opponent's piece."} == Game.move(game, user_1, :b7, :b6)
+    test "if attempting to move your opponent's piece", %{state: state, user_1: user_1} do
+      assert {:error, "Unable to move opponent's piece."} == handle_call({:move, user_1, :b7, :b6}, state)
     end
 
-    test "if the from or to position aren't legit", %{game: game, user_1: user_1} do
-      assert {:error, "Invalid position."} == Game.move(game, user_1, :e9, :e4)
-      assert {:error, "Invalid position."} == Game.move(game, user_1, :e2, :z9)
+    test "if the from or to position aren't legit", %{state: state, user_1: user_1} do
+      assert {:error, "Invalid position."} == handle_call({:move, user_1, :e9, :e4}, state)
+      assert {:error, "Invalid position."} == handle_call({:move, user_1, :e2, :z9}, state)
     end
-  end
 
-  test "move fails if the rules aren't followed" do
-    {:ok, game} = Game.start_link()
+    test "if the rules aren't followed" do
+      user_1 = User.new()
+      {:ok, state} = handle_call({:add_player, user_1, :white}, %Game{})
 
-    user_1 = User.new()
-    assert :ok == Game.add_player(game, user_1, :white)
-    assert {:error, "Unable to take that action."} == Game.move(game, user_1, :e2, :e4)
+      assert {:error, "Unable to take that action."} == handle_call({:move, user_1, :e2, :e4}, state)
+    end
   end
 
   describe "move causes status change" do
     setup :game_ready_to_move
 
-    test "move puts opponent in check", %{game: game, user_1: user_1, user_2: user_2} do
-      :ok = Game.move(game, user_1, :e2, :e4)
-      :ok = Game.move(game, user_2, :f7, :f5)
-      :ok = Game.move(game, user_1, :d1, :h5)
-      assert {:in_check, :black} == state(game).status
-      assert %Rules{state: :black_turn} = state(game).rules
+    test "move puts opponent in check", %{state: state, user_1: user_1, user_2: user_2} do
+      {:ok, state} = handle_call({:move, user_1, :e2, :e4}, state)
+      {:ok, state} = handle_call({:move, user_2, :f7, :f5}, state)
+      {:ok, state} = handle_call({:move, user_1, :d1, :h5}, state)
+      assert state.status == {:in_check, :black}
+      assert state.rules == %Rules{state: :black_turn}
     end
 
-    test "move puts opponent in checkmate", %{game: game, user_1: user_1, user_2: user_2} do
-      :ok = Game.move(game, user_1, :e2, :e4)
-      :ok = Game.move(game, user_2, :h7, :h6)
-      :ok = Game.move(game, user_1, :f1, :c4)
-      :ok = Game.move(game, user_2, :a7, :a6)
-      :ok = Game.move(game, user_1, :d1, :f3)
-      :ok = Game.move(game, user_2, :a6, :a5)
-      :ok = Game.move(game, user_1, :f3, :f7)
-      assert {:in_checkmate, :black} == state(game).status
-      assert %Rules{state: :game_over} = state(game).rules
+    test "move puts opponent in checkmate", %{state: state, user_1: user_1, user_2: user_2} do
+      {:ok, state} = handle_call({:move, user_1, :e2, :e4}, state)
+      {:ok, state} = handle_call({:move, user_2, :h7, :h6}, state)
+      {:ok, state} = handle_call({:move, user_1, :f1, :c4}, state)
+      {:ok, state} = handle_call({:move, user_2, :a7, :a6}, state)
+      {:ok, state} = handle_call({:move, user_1, :d1, :f3}, state)
+      {:ok, state} = handle_call({:move, user_2, :a6, :a5}, state)
+      {:ok, state} = handle_call({:move, user_1, :f3, :f7}, state)
+
+      assert state.status == {:in_checkmate, :black}
+      assert state.rules == %Rules{state: :game_over}
     end
   end
 
@@ -135,15 +136,13 @@ defmodule Chess.GameTest do
   end
 
   defp game_ready_to_move(_context) do
-    {:ok, game} = Game.start_link()
-
     user_1 = User.new()
     user_2 = User.new()
 
-    :ok = Game.add_player(game, user_1, :white)
-    :ok = Game.add_player(game, user_2, :black)
+    {:ok, state} = handle_call({:add_player, user_1, :white}, %Game{})
+    {:ok, state} = handle_call({:add_player, user_2, :black}, state)
 
-    [game: game, user_1: user_1, user_2: user_2]
+    [state: state, user_1: user_1, user_2: user_2]
   end
 
   defp handle_call(params, state) do
