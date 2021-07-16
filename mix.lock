@@ -1,3 +1,3 @@
 %{
-  "random_bytes": {:hex, :random_bytes, "1.0.1", "bc14747dd4fb6a5b8a1a626b850a9ee1ea57c5016fbeba423757d289697619b0", [:mix], [], "hexpm"},
+  "random_bytes": {:hex, :random_bytes, "1.0.3", "5ef4d6fcb48db05a317075aea1dbbdac2e46af50771cb6db42f284b1e1fd14a1", [:mix], [], "hexpm", "2825b1edc3480fc325b7772019b90ccf83d9d2041a101332964d8a4ffa4eb7c5"},
 }
