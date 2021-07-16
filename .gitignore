@@ -23,4 +23,4 @@ erl_crash.dump
 chess-*.tar
 
 .scratch
-
+.tool-versions
