@@ -65,10 +65,10 @@ iex(9)> :sys.get_state(game)
   ...
 >
 
-Game.move(game, user_1, :b7, :b6)
+iex> Game.move(game, user_1, :b7, :b6)
 {:error, "There is no piece at that position."}
 
-Game.move(game, user_1, :e4, :b6)
+iex> Game.move(game, user_1, :e4, :b6)
 {:error, "That is not a legal move."}
 ```
 
