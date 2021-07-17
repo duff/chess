@@ -81,8 +81,7 @@ defmodule Chess.GameTest do
     setup :game_ready_to_move
 
     test "if the user isn't playing the game", %{state: state} do
-      assert {:error, "Unable to make a move if you're not playing the game."} ==
-               handle_call({:move, User.new(), :e2, :e4}, state)
+      assert {:error, "Unable to make a move if you're not playing the game."} == handle_call({:move, User.new(), :e2, :e4}, state)
     end
 
     test "if the Board disallows it", %{state: state, user_1: user_1} do

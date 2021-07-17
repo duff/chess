@@ -4,5 +4,5 @@
     "{mix,.formatter}.exs",
     "{config,lib,test}/**/*.{ex,exs}"
   ],
-  line_length: 130
+  line_length: 140
 ]
