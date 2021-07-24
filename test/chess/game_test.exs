@@ -14,6 +14,17 @@ defmodule Chess.GameTest do
       {:ok, game2} = Game.start_link()
       assert state(game1).id != nil
       assert state(game1).id != state(game2).id
+      assert game1 != game2
+    end
+
+    test "creates a new game with a specified id and reuses the game if the game already exists" do
+      {:ok, game1} = Game.start_link("the_id")
+      {:ok, game2} = Game.start_link("the_id")
+      {:ok, game3} = Game.start_link("another_id")
+      assert state(game1).id != nil
+      assert state(game1).id == state(game2).id
+      assert game1 == game2
+      assert game1 != game3
     end
   end
 

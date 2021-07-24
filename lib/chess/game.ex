@@ -14,8 +14,14 @@ defmodule Chess.Game do
             id: nil
 
   def start_link() do
-    game = %Game{id: RandomBytes.base62()}
-    GenServer.start_link(__MODULE__, game, name: via_tuple(game.id))
+    start_genserver(RandomBytes.base62())
+  end
+
+  def start_link(game_id) do
+    case GenServer.whereis(via_tuple(game_id)) do
+      nil -> start_genserver(game_id)
+      existing -> {:ok, existing}
+    end
   end
 
   def add_player(game, user, color) do
@@ -28,6 +34,10 @@ defmodule Chess.Game do
 
   def via_tuple(id) do
     {:via, Registry, {Registry.Game, id}}
+  end
+
+  defp start_genserver(id) do
+    GenServer.start_link(__MODULE__, %Game{id: id}, name: via_tuple(id))
   end
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
