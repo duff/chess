@@ -24,12 +24,12 @@ defmodule Chess.Game do
     end
   end
 
-  def add_player(game, user, color) do
-    GenServer.call(game, {:add_player, user, color})
+  def add_player(game, username, color) do
+    GenServer.call(game, {:add_player, username, color})
   end
 
-  def move(game, user, from, to) do
-    GenServer.call(game, {:move, user, from, to})
+  def move(game, username, from, to) do
+    GenServer.call(game, {:move, username, from, to})
   end
 
   def via_tuple(id) do
@@ -48,11 +48,11 @@ defmodule Chess.Game do
 
   defp reply_success(state_data, reply), do: {:reply, reply, state_data}
 
-  defp add_player_allowed?(%Game{black: user}, user, :white) do
+  defp add_player_allowed?(%Game{black: username}, username, :white) do
     {:error, "The same player cannot play both sides of the board."}
   end
 
-  defp add_player_allowed?(%Game{white: user}, user, :black) do
+  defp add_player_allowed?(%Game{white: username}, username, :black) do
     {:error, "The same player cannot play both sides of the board."}
   end
 
@@ -60,11 +60,11 @@ defmodule Chess.Game do
     {:ok}
   end
 
-  defp color(%Game{black: user}, user) do
+  defp color(%Game{black: username}, username) do
     {:ok, :black}
   end
 
-  defp color(%Game{white: user}, user) do
+  defp color(%Game{white: username}, username) do
     {:ok, :white}
   end
 
@@ -86,11 +86,11 @@ defmodule Chess.Game do
   end
 
   @impl true
-  def handle_call({:add_player, user, color}, _from, state_data) when color in ~w[white black]a do
+  def handle_call({:add_player, username, color}, _from, state_data) when color in ~w[white black]a do
     with {:ok, rules} <- Rules.check(state_data.rules, {:add_player, color}),
-         {:ok} <- add_player_allowed?(state_data, user, color) do
+         {:ok} <- add_player_allowed?(state_data, username, color) do
       state_data
-      |> Map.replace!(color, user)
+      |> Map.replace!(color, username)
       |> update_rules(rules)
       |> reply_success(:ok)
     else
@@ -99,8 +99,8 @@ defmodule Chess.Game do
   end
 
   @impl true
-  def handle_call({:move, user, from, to}, _from, state_data) do
-    with {:ok, color} <- color(state_data, user),
+  def handle_call({:move, username, from, to}, _from, state_data) do
+    with {:ok, color} <- color(state_data, username),
          {:ok, rules} <- Rules.check(state_data.rules, {:move, color}),
          {:ok, from_position} <- Position.new(from),
          {:ok} <- moving_own_piece(color, state_data.board, from_position),
