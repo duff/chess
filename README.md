@@ -20,22 +20,12 @@ end
 ```elixir
 iex> alias Chess.Game
 
-iex> {:ok, game} = Game.start_link()
-{:ok, #PID<0.202.0>}
-
-iex> Game.add_player(game, "user_1", :white)
-:ok
-
-iex> Game.add_player(game, "user_2", :black)
-:ok
-
-iex> Game.move(game, "user_1", :e2, :e4)
-:ok
-
-iex> Game.move(game, "user_2", :b7, :b6)
-:ok
-
-iex(9)> :sys.get_state(game)
+iex> game = Game.new()
+iex> {:ok, game} = Game.add_player(game, "user_1", :white)
+iex> {:ok, game} = Game.add_player(game, "user_2", :black)
+iex> {:ok, game} = Game.move(game, "user_1", :e2, :e4)
+iex> {:ok, game} = Game.move(game, "user_2", :b7, :b6)
+iex> game
 
 #Chess.Game<
   black: "user_2",
@@ -52,7 +42,7 @@ iex(9)> :sys.get_state(game)
   +--------------------------+
      a  b  c  d  e  f  g  h
 ,
-  id: "9WN13RBp225aTjVjjoFpGA",
+  id: nil,
   rules: %Chess.Rules{state: :white_turn},
   status: {:in_progress},
   white: "user_1",
